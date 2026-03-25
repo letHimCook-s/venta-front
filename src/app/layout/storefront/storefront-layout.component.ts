@@ -1,60 +1,49 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnDestroy, OnInit } from '@angular/core';
-import { FormsModule } from '@angular/forms';
-import { RouterLink, RouterOutlet } from '@angular/router';
+import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
+import { Router, RouterLink, RouterOutlet } from '@angular/router';
 import { Subscription } from 'rxjs';
+import { AuthService, AuthSession } from '../../features/auth/services/auth.service';
+import {
+  DEFAULT_FOOTER_CONFIG,
+  DEFAULT_NAVBAR_CONFIG,
+  FooterConfig,
+  isFooterConfig,
+  isNavbarConfig,
+  NavbarConfig,
+  NavbarIcon
+} from '../../core/models/landing-layout.model';
 import { LandingConfigService } from '../../core/services/landing-config.service';
-
-type NavbarIcon = 'user' | 'cart';
-
-interface NavbarConfig {
-  brandName: string;
-  logoMode: 'icon-text' | 'image';
-  logoUrl: string | null;
-  categories: string[];
-  searchPlaceholder: string;
-  showSearch: boolean;
-  showUserIcon: boolean;
-  showCartIcon: boolean;
-  searchPosition: 'start' | 'end';
-  iconOrder: NavbarIcon[];
-}
-
-const DEFAULT_NAVBAR_CONFIG: NavbarConfig = {
-  brandName: 'Giga Shop',
-  logoMode: 'icon-text',
-  logoUrl: null,
-  categories: ['Contactanos', 'Descubrir', 'Software', 'Ofertas'],
-  searchPlaceholder: 'Buscar.....',
-  showSearch: true,
-  showUserIcon: true,
-  showCartIcon: true,
-  searchPosition: 'start',
-  iconOrder: ['user', 'cart']
-};
 
 @Component({
   selector: 'app-storefront-layout',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterOutlet, RouterLink],
+  imports: [CommonModule, RouterOutlet, RouterLink],
   templateUrl: './storefront-layout.component.html',
   styleUrl: './storefront-layout.component.scss'
 })
 export class StorefrontLayoutComponent implements OnInit, OnDestroy {
   navbarConfig: NavbarConfig = { ...DEFAULT_NAVBAR_CONFIG };
-  categoriesInput = this.navbarConfig.categories.join(', ');
-  isCustomizerOpen = false;
+  footerConfig: FooterConfig = { ...DEFAULT_FOOTER_CONFIG };
+  authSession: AuthSession | null = null;
+  userMenuOpen = false;
 
   private configSub?: Subscription;
 
-  constructor(private readonly landingConfigService: LandingConfigService) {}
+  constructor(
+    private readonly landingConfigService: LandingConfigService,
+    private readonly authService: AuthService,
+    private readonly router: Router
+  ) {}
 
   ngOnInit(): void {
     this.landingConfigService.init();
-    this.loadFromConfigService();
+    this.syncAuthSession();
+    this.loadNavbarFromConfigService();
+    this.loadFooterFromConfigService();
 
     this.configSub = this.landingConfigService.config$.subscribe(() => {
-      this.loadFromConfigService();
+      this.loadNavbarFromConfigService();
+      this.loadFooterFromConfigService();
     });
   }
 
@@ -62,79 +51,70 @@ export class StorefrontLayoutComponent implements OnInit, OnDestroy {
     this.configSub?.unsubscribe();
   }
 
-  toggleCustomizer(): void {
-    this.isCustomizerOpen = !this.isCustomizerOpen;
+  @HostListener('document:click')
+  handleDocumentClick(): void {
+    this.userMenuOpen = false;
   }
 
-  onLogoUpload(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    const file = input.files?.[0];
-    if (!file) {
-      return;
+  get isAdminSession(): boolean {
+    return this.authSession?.role === 'admin';
+  }
+
+  socialGlyph(platform: string): string {
+    const normalized = platform.toLowerCase().trim();
+
+    if (normalized === 'facebook') {
+      return 'f';
     }
 
-    const reader = new FileReader();
-    reader.onload = () => {
-      this.navbarConfig.logoUrl = typeof reader.result === 'string' ? reader.result : null;
-      this.navbarConfig.logoMode = this.navbarConfig.logoUrl ? 'image' : 'icon-text';
-    };
-    reader.readAsDataURL(file);
-  }
-
-  moveIconLeft(icon: NavbarIcon): void {
-    const nextOrder = [...this.navbarConfig.iconOrder];
-    const index = nextOrder.indexOf(icon);
-    if (index <= 0) {
-      return;
+    if (normalized === 'instagram') {
+      return 'ig';
     }
 
-    [nextOrder[index - 1], nextOrder[index]] = [nextOrder[index], nextOrder[index - 1]];
-    this.navbarConfig.iconOrder = nextOrder;
-  }
-
-  moveIconRight(icon: NavbarIcon): void {
-    const nextOrder = [...this.navbarConfig.iconOrder];
-    const index = nextOrder.indexOf(icon);
-    if (index === -1 || index >= nextOrder.length - 1) {
-      return;
+    if (normalized === 'x' || normalized === 'twitter') {
+      return 'x';
     }
 
-    [nextOrder[index + 1], nextOrder[index]] = [nextOrder[index], nextOrder[index + 1]];
-    this.navbarConfig.iconOrder = nextOrder;
-  }
+    if (normalized === 'tiktok') {
+      return 'tt';
+    }
 
-  saveNavbarConfig(): void {
-    const categories = this.categoriesInput
-      .split(',')
-      .map((value) => value.trim())
-      .filter((value) => !!value);
-
-    this.navbarConfig = {
-      ...this.navbarConfig,
-      categories: categories.length ? categories : [...DEFAULT_NAVBAR_CONFIG.categories]
-    };
-
-    this.categoriesInput = this.navbarConfig.categories.join(', ');
-    this.landingConfigService.saveSection('navbar', this.navbarConfig);
-  }
-
-  resetNavbarConfig(): void {
-    this.navbarConfig = { ...DEFAULT_NAVBAR_CONFIG };
-    this.categoriesInput = this.navbarConfig.categories.join(', ');
-    this.landingConfigService.resetSection('navbar');
+    return normalized.slice(0, 2) || '•';
   }
 
   get visibleIcons(): NavbarIcon[] {
     return this.navbarConfig.iconOrder.filter((icon) => this.isIconVisible(icon));
   }
 
-  private loadFromConfigService(): void {
+  onUserIconClick(event: MouseEvent): void {
+    event.stopPropagation();
+
+    if (!this.authSession) {
+      this.router.navigateByUrl('/auth/login');
+      return;
+    }
+
+    this.userMenuOpen = !this.userMenuOpen;
+  }
+
+  openAdminPanel(): void {
+    this.userMenuOpen = false;
+    this.router.navigateByUrl('/admin/dashboard');
+  }
+
+  logout(): void {
+    this.authService.logout();
+    this.syncAuthSession();
+    this.userMenuOpen = false;
+    this.router.navigateByUrl('/tienda');
+  }
+
+  private loadNavbarFromConfigService(): void {
     const section = this.landingConfigService.getSectionConfig('navbar');
     const rawConfig = section?.fabricJson;
 
-    if (!this.isNavbarConfig(rawConfig)) {
+    if (!isNavbarConfig(rawConfig)) {
       this.navbarConfig = { ...DEFAULT_NAVBAR_CONFIG };
-      this.categoriesInput = this.navbarConfig.categories.join(', ');
       return;
     }
 
@@ -150,7 +130,41 @@ export class StorefrontLayoutComponent implements OnInit, OnDestroy {
           ? [...rawConfig.iconOrder]
           : [...DEFAULT_NAVBAR_CONFIG.iconOrder]
     };
-    this.categoriesInput = this.navbarConfig.categories.join(', ');
+  }
+
+  private loadFooterFromConfigService(): void {
+    const section = this.landingConfigService.getSectionConfig('footer');
+    const rawConfig = section?.fabricJson;
+
+    if (!isFooterConfig(rawConfig)) {
+      this.footerConfig = { ...DEFAULT_FOOTER_CONFIG };
+      return;
+    }
+
+    this.footerConfig = {
+      ...DEFAULT_FOOTER_CONFIG,
+      ...rawConfig,
+      socialItems:
+        rawConfig.socialItems.length > 0
+          ? [...rawConfig.socialItems]
+          : [...DEFAULT_FOOTER_CONFIG.socialItems],
+      aboutLinks:
+        rawConfig.aboutLinks.length > 0
+          ? [...rawConfig.aboutLinks]
+          : [...DEFAULT_FOOTER_CONFIG.aboutLinks],
+      secureLinks:
+        rawConfig.secureLinks.length > 0
+          ? [...rawConfig.secureLinks]
+          : [...DEFAULT_FOOTER_CONFIG.secureLinks],
+      paymentMethods:
+        rawConfig.paymentMethods.length > 0
+          ? [...rawConfig.paymentMethods]
+          : [...DEFAULT_FOOTER_CONFIG.paymentMethods]
+    };
+  }
+
+  private syncAuthSession(): void {
+    this.authSession = this.authService.getSession();
   }
 
   private isIconVisible(icon: NavbarIcon): boolean {
@@ -161,25 +175,4 @@ export class StorefrontLayoutComponent implements OnInit, OnDestroy {
     return this.navbarConfig.showCartIcon;
   }
 
-  private isNavbarConfig(value: unknown): value is NavbarConfig {
-    if (!value || typeof value !== 'object') {
-      return false;
-    }
-
-    const candidate = value as Partial<NavbarConfig>;
-    return (
-      typeof candidate.brandName === 'string' &&
-      (candidate.logoMode === 'icon-text' || candidate.logoMode === 'image') &&
-      (typeof candidate.logoUrl === 'string' || candidate.logoUrl === null) &&
-      Array.isArray(candidate.categories) &&
-      candidate.categories.every((item) => typeof item === 'string') &&
-      typeof candidate.searchPlaceholder === 'string' &&
-      typeof candidate.showSearch === 'boolean' &&
-      typeof candidate.showUserIcon === 'boolean' &&
-      typeof candidate.showCartIcon === 'boolean' &&
-      (candidate.searchPosition === 'start' || candidate.searchPosition === 'end') &&
-      Array.isArray(candidate.iconOrder) &&
-      candidate.iconOrder.every((item) => item === 'user' || item === 'cart')
-    );
-  }
 }

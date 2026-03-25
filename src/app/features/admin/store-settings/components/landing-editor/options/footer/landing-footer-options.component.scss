@@ -19,6 +19,31 @@ p {
   flex-wrap: wrap;
 }
 
+.edit-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.6rem;
+}
+
+.edit-grid label,
+.color-grid label {
+  display: grid;
+  gap: 0.3rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #334155;
+}
+
+.edit-grid .wide {
+  grid-column: 1 / -1;
+}
+
+.color-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.6rem;
+}
+
 button {
   border: 1px solid #bfccdb;
   background: #f8fafc;
@@ -32,4 +57,14 @@ button.primary {
   background: #0ea5e9;
   color: #ffffff;
   border-color: #0ea5e9;
+}
+
+input,
+textarea,
+select {
+  width: 100%;
+  padding: 0.55rem 0.7rem;
+  border: 1px solid #cdd8e5;
+  border-radius: 0.65rem;
+  font: inherit;
 }

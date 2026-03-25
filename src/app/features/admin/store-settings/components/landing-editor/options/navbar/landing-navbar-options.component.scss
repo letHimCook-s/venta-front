@@ -14,15 +14,34 @@ p {
 
 .actions,
 .save-actions,
-.image-tools {
+.toggles {
   display: flex;
   gap: 0.6rem;
   flex-wrap: wrap;
 }
 
-input {
-  min-width: 280px;
-  flex: 1;
+.edit-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.6rem;
+}
+
+.edit-grid label {
+  display: grid;
+  gap: 0.3rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #334155;
+}
+
+.edit-grid .wide {
+  grid-column: 1 / -1;
+}
+
+input,
+textarea,
+select {
+  width: 100%;
   padding: 0.55rem 0.7rem;
   border: 1px solid #cdd8e5;
   border-radius: 0.65rem;

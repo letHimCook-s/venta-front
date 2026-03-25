@@ -27,6 +27,7 @@
   <app-landing-body-options
     *ngIf="selectedSection === 'hero'"
     sectionLabel="Opciones de Hero / Carrusel"
+    sectionId="hero"
     [imageUrl]="imageUrl"
     (imageUrlChange)="imageUrl = $event"
     (action)="onAction($event)"
@@ -35,6 +36,7 @@
   <app-landing-body-options
     *ngIf="selectedSection === 'products'"
     sectionLabel="Opciones de productos y subcategorias"
+    sectionId="products"
     [imageUrl]="imageUrl"
     (imageUrlChange)="imageUrl = $event"
     (action)="onAction($event)"
@@ -42,7 +44,6 @@
 
   <app-landing-footer-options
     *ngIf="selectedSection === 'footer'"
-    (action)="onAction($event)"
   />
 
   <section class="canvas-wrap">

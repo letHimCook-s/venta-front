@@ -1,4 +1,29 @@
-import { Routes } from '@angular/router';
+import { inject } from '@angular/core';
+import { CanActivateFn, Router, Routes } from '@angular/router';
+import { AuthService } from './features/auth/services/auth.service';
+
+const adminAccessGuard: CanActivateFn = () => {
+	const authService = inject(AuthService);
+	const router = inject(Router);
+
+	if (authService.isAdmin()) {
+		return true;
+	}
+
+	return router.createUrlTree(['/auth/login']);
+};
+
+const guestOnlyGuard: CanActivateFn = () => {
+	const authService = inject(AuthService);
+	const router = inject(Router);
+	const session = authService.getSession();
+
+	if (!session) {
+		return true;
+	}
+
+	return router.createUrlTree([session.role === 'admin' ? '/admin/dashboard' : '/tienda']);
+};
 
 export const routes: Routes = [
 	{
@@ -8,6 +33,7 @@ export const routes: Routes = [
 	},
 	{
 		path: 'admin',
+		canActivate: [adminAccessGuard],
 		loadComponent: () =>
 			import('./layout/admin/admin-layout.component').then(
 				(m) => m.AdminLayoutComponent
@@ -105,6 +131,7 @@ export const routes: Routes = [
 	},
 	{
 		path: 'auth',
+		canActivate: [guestOnlyGuard],
 		loadComponent: () =>
 			import('./layout/auth/auth-layout.component').then(
 				(m) => m.AuthLayoutComponent

@@ -20,12 +20,116 @@ p {
   flex-wrap: wrap;
 }
 
-input {
+.image-tools input {
   min-width: 280px;
   flex: 1;
   padding: 0.55rem 0.7rem;
   border: 1px solid #cdd8e5;
   border-radius: 0.65rem;
+  font: inherit;
+}
+
+.admin-builder {
+  display: grid;
+  gap: 0.75rem;
+  border: 1px solid #dbe3ee;
+  border-radius: 0.75rem;
+  padding: 0.75rem;
+  background: #ffffff;
+}
+
+.builder-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.builder-head h5 {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.picker-wrap {
+  display: flex;
+  justify-content: center;
+}
+
+button.plus {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 999px;
+  font-size: 1.3rem;
+  font-weight: 700;
+}
+
+.type-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+
+.type-grid button {
+  text-align: left;
+}
+
+.block-list {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.block-card {
+  border: 1px solid #dbe3ee;
+  border-radius: 0.7rem;
+  padding: 0.65rem;
+  display: grid;
+  gap: 0.6rem;
+}
+
+.block-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.block-head strong {
+  display: block;
+}
+
+.block-head small {
+  color: #64748b;
+}
+
+.block-actions {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.edit-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.6rem;
+}
+
+.edit-grid label {
+  display: grid;
+  gap: 0.3rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #334155;
+}
+
+.edit-grid .wide {
+  grid-column: 1 / -1;
+}
+
+.edit-grid input,
+.edit-grid textarea {
+  width: 100%;
+  padding: 0.45rem 0.6rem;
+  border: 1px solid #cdd8e5;
+  border-radius: 0.55rem;
   font: inherit;
 }
 

@@ -1,16 +1,76 @@
 <section class="options-panel">
   <h4>Opciones de footer</h4>
-  <p>Configura textos legales, redes, metodos de pago y contacto.</p>
+  <p>Configura redes, enlaces, metodos de pago y texto legal.</p>
+
+  <div class="edit-grid">
+    <label>
+      Titulo redes
+      <input type="text" [(ngModel)]="footerConfig.socialTitle" />
+    </label>
+
+    <label>
+      Titulo columna 1
+      <input type="text" [(ngModel)]="footerConfig.aboutTitle" />
+    </label>
+
+    <label class="wide">
+      Redes (coma separada)
+      <input type="text" [(ngModel)]="socialItemsInput" />
+    </label>
+
+    <label class="wide">
+      Links columna 1 (coma separada)
+      <textarea rows="2" [(ngModel)]="aboutLinksInput"></textarea>
+    </label>
+
+    <label>
+      Titulo columna 2
+      <input type="text" [(ngModel)]="footerConfig.secureTitle" />
+    </label>
+
+    <label>
+      Titulo pagos
+      <input type="text" [(ngModel)]="footerConfig.paymentsTitle" />
+    </label>
+
+    <label class="wide">
+      Links columna 2 (coma separada)
+      <textarea rows="2" [(ngModel)]="secureLinksInput"></textarea>
+    </label>
+
+    <label class="wide">
+      Metodos de pago (coma separada)
+      <input type="text" [(ngModel)]="paymentMethodsInput" />
+    </label>
+
+    <label class="wide">
+      Texto legal
+      <input type="text" [(ngModel)]="footerConfig.legalText" />
+    </label>
+  </div>
+
+  <div class="color-grid">
+    <label>
+      Fondo
+      <input type="color" [(ngModel)]="footerConfig.backgroundColor" />
+    </label>
+    <label>
+      Texto
+      <input type="color" [(ngModel)]="footerConfig.textColor" />
+    </label>
+    <label>
+      Linea divisora
+      <input type="color" [(ngModel)]="footerConfig.dividerColor" />
+    </label>
+  </div>
 
   <div class="actions">
-    <button type="button" (click)="emit('addText')">Agregar texto</button>
-    <button type="button" (click)="emit('addBlock')">Agregar bloque</button>
-    <button type="button" (click)="emit('removeSelected')">Eliminar</button>
-    <button type="button" (click)="emit('clearCanvas')">Limpiar</button>
+    <label><input type="checkbox" [(ngModel)]="footerConfig.showSocial" /> Mostrar redes</label>
+    <label><input type="checkbox" [(ngModel)]="footerConfig.showPayments" /> Mostrar pagos</label>
   </div>
 
   <div class="save-actions">
-    <button type="button" class="primary" (click)="emit('saveSection')">Guardar footer</button>
-    <button type="button" (click)="emit('resetSection')">Reiniciar footer</button>
+    <button type="button" class="primary" (click)="saveFooterConfig()">Guardar footer</button>
+    <button type="button" (click)="resetFooterConfig()">Reiniciar footer</button>
   </div>
 </section>

@@ -1,5 +1,9 @@
-<main
-  class="grid min-h-screen place-items-center bg-gradient-to-b from-slate-50 to-slate-200 px-4 py-4"
->
-  <router-outlet />
+<main class="flex min-h-screen flex-col bg-gradient-to-b from-slate-50 to-slate-200">
+  <section class="grid flex-1 place-items-center px-4 py-6">
+    <router-outlet />
+  </section>
+
+  <footer class="border-t border-slate-200 bg-white/70 px-4 py-3 text-center text-xs text-slate-600 backdrop-blur-sm">
+    Venta Front · Acceso seguro de cuenta
+  </footer>
 </main>

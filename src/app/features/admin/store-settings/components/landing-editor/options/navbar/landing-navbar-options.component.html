@@ -1,26 +1,62 @@
 <section class="options-panel">
   <h4>Opciones de navbar</h4>
-  <p>Edita logo, enlaces y bloques visuales del header.</p>
+  <p>Editor del administrador para logo, categorias, buscador e iconos.</p>
 
-  <div class="actions">
-    <button type="button" (click)="emit('addText')">Texto</button>
-    <button type="button" (click)="emit('addBlock')">Bloque</button>
-    <button type="button" (click)="emit('removeSelected')">Eliminar</button>
-    <button type="button" (click)="emit('clearCanvas')">Limpiar</button>
+  <div class="edit-grid">
+    <label>
+      Nombre de marca
+      <input type="text" [(ngModel)]="navbarConfig.brandName" />
+    </label>
+
+    <label>
+      Placeholder de busqueda
+      <input type="text" [(ngModel)]="navbarConfig.searchPlaceholder" />
+    </label>
+
+    <label class="wide">
+      Categorias (coma separada)
+      <textarea rows="2" [(ngModel)]="categoriesInput"></textarea>
+    </label>
+
+    <label>
+      Tipo de logo
+      <select [(ngModel)]="navbarConfig.logoMode">
+        <option value="icon-text">Icono + texto</option>
+        <option value="image">Imagen</option>
+      </select>
+    </label>
+
+    <label>
+      Posicion de busqueda
+      <select [(ngModel)]="navbarConfig.searchPosition">
+        <option value="start">Antes de iconos</option>
+        <option value="end">Despues de iconos</option>
+      </select>
+    </label>
+
+    @if (navbarConfig.logoMode === 'image') {
+      <label class="wide">
+        Subir logo
+        <input type="file" accept="image/*" (change)="onLogoUpload($event)" />
+      </label>
+    }
   </div>
 
-  <div class="image-tools">
-    <input
-      type="url"
-      [ngModel]="imageUrl"
-      (ngModelChange)="onImageUrlChange($event)"
-      placeholder="https://.../logo.jpg"
-    />
-    <button type="button" (click)="emit('addImage')">Agregar logo/imagen</button>
+  <div class="toggles">
+    <label><input type="checkbox" [(ngModel)]="navbarConfig.showSearch" /> Mostrar buscador</label>
+    <label><input type="checkbox" [(ngModel)]="navbarConfig.showUserIcon" /> Mostrar icono usuario</label>
+    <label><input type="checkbox" [(ngModel)]="navbarConfig.showCartIcon" /> Mostrar icono carrito</label>
+  </div>
+
+  <div class="actions">
+    <button type="button" (click)="moveIconLeft('user')">Usuario ⬅</button>
+    <button type="button" (click)="moveIconRight('user')">Usuario ➡</button>
+    <button type="button" (click)="moveIconLeft('cart')">Carrito ⬅</button>
+    <button type="button" (click)="moveIconRight('cart')">Carrito ➡</button>
   </div>
 
   <div class="save-actions">
-    <button type="button" class="primary" (click)="emit('saveSection')">Guardar navbar</button>
-    <button type="button" (click)="emit('resetSection')">Reiniciar navbar</button>
+    <button type="button" class="primary" (click)="saveNavbarConfig()">Guardar navbar</button>
+    <button type="button" (click)="resetNavbarConfig()">Reiniciar navbar</button>
   </div>
 </section>

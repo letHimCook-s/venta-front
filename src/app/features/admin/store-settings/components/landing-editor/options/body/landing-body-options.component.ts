@@ -1,6 +1,16 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import {
+  createDefaultLandingBodyConfig,
+  isLandingBodyConfig,
+  LANDING_BODY_BLOCK_TYPES,
+  LandingBodyBlock,
+  LandingBodyBlockType,
+  LandingBodyConfig
+} from '../../../../../../../core/models/landing-body.model';
+import { LandingConfigService } from '../../../../../../../core/services/landing-config.service';
+import { LandingSection } from '../../../../../../../core/models/landing-config.model';
 import { LandingEditorAction } from '../../models/landing-editor.types';
 
 @Component({
@@ -12,16 +22,284 @@ import { LandingEditorAction } from '../../models/landing-editor.types';
 })
 export class LandingBodyOptionsComponent {
   @Input() sectionLabel = 'Cuerpo del landing';
+  @Input() sectionId: LandingSection = 'products';
   @Input() imageUrl = '';
 
   @Output() imageUrlChange = new EventEmitter<string>();
   @Output() action = new EventEmitter<LandingEditorAction>();
 
+  bodyConfig: LandingBodyConfig = createDefaultLandingBodyConfig();
+  blockTypes = LANDING_BODY_BLOCK_TYPES;
+  isPickerOpen = false;
+  editingBlockId: string | null = null;
+
+  constructor(private readonly landingConfigService: LandingConfigService) {
+    this.landingConfigService.init();
+    this.loadBodyConfig();
+  }
+
   onImageUrlChange(value: string): void {
     this.imageUrlChange.emit(value);
   }
 
+  togglePicker(): void {
+    this.isPickerOpen = !this.isPickerOpen;
+  }
+
+  addBlock(type: LandingBodyBlockType): void {
+    const suffix = `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+    const newBlock: LandingBodyBlock = {
+      id: `${type}-${suffix}`,
+      type,
+      title: this.defaultTitle(type),
+      subtitle: this.defaultSubtitle(type),
+      items: this.defaultItems(type),
+      imageUrl: null,
+      ctaText: this.defaultCta(type)
+    };
+
+    this.bodyConfig = {
+      blocks: [...this.bodyConfig.blocks, newBlock]
+    };
+
+    this.persistBodyConfig();
+    this.isPickerOpen = false;
+    this.editingBlockId = newBlock.id;
+  }
+
+  removeBlock(id: string): void {
+    this.bodyConfig = {
+      blocks: this.bodyConfig.blocks.filter((block) => block.id !== id)
+    };
+    this.persistBodyConfig();
+  }
+
+  toggleBlockEditor(id: string): void {
+    this.editingBlockId = this.editingBlockId === id ? null : id;
+  }
+
+  isEditingBlock(id: string): boolean {
+    return this.editingBlockId === id;
+  }
+
+  updateBlock(blockId: string, nextBlock: LandingBodyBlock): void {
+    this.bodyConfig = {
+      blocks: this.bodyConfig.blocks.map((block) => (block.id === blockId ? nextBlock : block))
+    };
+    this.persistBodyConfig();
+  }
+
+  updateTitle(blockId: string, value: string): void {
+    const block = this.bodyConfig.blocks.find((item) => item.id === blockId);
+    if (!block) {
+      return;
+    }
+
+    this.updateBlock(blockId, {
+      ...block,
+      title: value
+    });
+  }
+
+  updateSubtitle(blockId: string, value: string): void {
+    const block = this.bodyConfig.blocks.find((item) => item.id === blockId);
+    if (!block) {
+      return;
+    }
+
+    this.updateBlock(blockId, {
+      ...block,
+      subtitle: value
+    });
+  }
+
+  updateCta(blockId: string, value: string): void {
+    const block = this.bodyConfig.blocks.find((item) => item.id === blockId);
+    if (!block) {
+      return;
+    }
+
+    this.updateBlock(blockId, {
+      ...block,
+      ctaText: value
+    });
+  }
+
+  updateItemsFromText(blockId: string, value: string): void {
+    const block = this.bodyConfig.blocks.find((item) => item.id === blockId);
+    if (!block) {
+      return;
+    }
+
+    this.updateBlock(blockId, {
+      ...block,
+      items: value
+        .split(',')
+        .map((item) => item.trim())
+        .filter((item) => !!item)
+    });
+  }
+
+  itemsAsText(block: LandingBodyBlock): string {
+    return block.items.join(', ');
+  }
+
+  onBlockImageUpload(blockId: string, event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) {
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = typeof reader.result === 'string' ? reader.result : null;
+      const block = this.bodyConfig.blocks.find((item) => item.id === blockId);
+      if (!block) {
+        return;
+      }
+
+      this.updateBlock(blockId, {
+        ...block,
+        imageUrl: result
+      });
+    };
+
+    reader.readAsDataURL(file);
+  }
+
+  showImageUploader(type: LandingBodyBlockType): boolean {
+    return type === 'single-image' || type === 'image-carousel';
+  }
+
+  blockHint(type: LandingBodyBlockType): string {
+    if (type === 'product-carousel') {
+      return 'Carrusel horizontal de productos';
+    }
+
+    if (type === 'brands-loop') {
+      return 'Marcas con loop continuo';
+    }
+
+    if (type === 'single-image') {
+      return 'Banner unico principal';
+    }
+
+    if (type === 'offers-grid') {
+      return 'Mosaico de ofertas';
+    }
+
+    return 'Carrusel de imagenes';
+  }
+
+  resetBodyLayout(): void {
+    this.bodyConfig = createDefaultLandingBodyConfig();
+    this.persistBodyConfig();
+  }
+
+  trackByBlockId(_: number, block: LandingBodyBlock): string {
+    return block.id;
+  }
+
   emit(action: LandingEditorAction): void {
     this.action.emit(action);
+  }
+
+  private loadBodyConfig(): void {
+    const section = this.landingConfigService.getSectionConfig(this.sectionId);
+    const raw = section?.fabricJson;
+
+    if (!isLandingBodyConfig(raw)) {
+      this.bodyConfig = createDefaultLandingBodyConfig();
+      return;
+    }
+
+    this.bodyConfig = {
+      blocks: [...raw.blocks]
+    };
+  }
+
+  private persistBodyConfig(): void {
+    this.landingConfigService.saveSection(this.sectionId, this.bodyConfig);
+  }
+
+  private defaultTitle(type: LandingBodyBlockType): string {
+    if (type === 'image-carousel') {
+      return 'Nuevo carrusel de imagenes';
+    }
+
+    if (type === 'product-carousel') {
+      return 'Nuevo carrusel de productos';
+    }
+
+    if (type === 'brands-loop') {
+      return 'Nuevo loop de marcas';
+    }
+
+    if (type === 'single-image') {
+      return 'Nueva imagen principal';
+    }
+
+    return 'Nueva grilla de ofertas';
+  }
+
+  private defaultSubtitle(type: LandingBodyBlockType): string {
+    if (type === 'image-carousel') {
+      return 'Edita imagenes y orden para la cabecera visual.';
+    }
+
+    if (type === 'product-carousel') {
+      return 'Configura productos destacados con scroll horizontal.';
+    }
+
+    if (type === 'brands-loop') {
+      return 'Agrega logos de marcas para mostrarlos en bucle.';
+    }
+
+    if (type === 'single-image') {
+      return 'Ideal para una promocion puntual.';
+    }
+
+    return 'Agrega tarjetas con precio y descuento.';
+  }
+
+  private defaultItems(type: LandingBodyBlockType): string[] {
+    if (type === 'image-carousel') {
+      return ['Slide 1', 'Slide 2', 'Slide 3'];
+    }
+
+    if (type === 'product-carousel') {
+      return ['Producto 1', 'Producto 2', 'Producto 3'];
+    }
+
+    if (type === 'brands-loop') {
+      return ['Marca 1', 'Marca 2', 'Marca 3', 'Marca 4'];
+    }
+
+    if (type === 'single-image') {
+      return ['Banner principal'];
+    }
+
+    return ['Oferta 1', 'Oferta 2', 'Oferta 3', 'Oferta 4'];
+  }
+
+  private defaultCta(type: LandingBodyBlockType): string {
+    if (type === 'image-carousel') {
+      return 'Ver novedades';
+    }
+
+    if (type === 'product-carousel') {
+      return 'Ver productos';
+    }
+
+    if (type === 'brands-loop') {
+      return 'Ver marcas';
+    }
+
+    if (type === 'single-image') {
+      return 'Comprar ahora';
+    }
+
+    return 'Ver ofertas';
   }
 }

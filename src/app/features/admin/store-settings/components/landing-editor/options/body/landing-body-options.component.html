@@ -2,6 +2,88 @@
   <h4>{{ sectionLabel }}</h4>
   <p>Define banners, bloques de contenido y destacados visuales.</p>
 
+  @if (sectionId === 'products') {
+    <article class="admin-builder">
+      <div class="builder-head">
+        <h5>Constructor del cuerpo del landing</h5>
+        <button type="button" class="ghost" (click)="resetBodyLayout()">Restablecer</button>
+      </div>
+
+      <div class="picker-wrap">
+        <button type="button" class="plus" (click)="togglePicker()">+</button>
+      </div>
+
+      @if (isPickerOpen) {
+        <div class="type-grid">
+          <button *ngFor="let type of blockTypes" type="button" (click)="addBlock(type.id)">
+            {{ type.label }}
+          </button>
+        </div>
+      }
+
+      <div class="block-list">
+        <section class="block-card" *ngFor="let block of bodyConfig.blocks; trackBy: trackByBlockId">
+          <div class="block-head">
+            <div>
+              <strong>{{ block.title }}</strong>
+              <small>{{ blockHint(block.type) }}</small>
+            </div>
+            <div class="block-actions">
+              <button type="button" (click)="toggleBlockEditor(block.id)">
+                {{ isEditingBlock(block.id) ? 'Cerrar' : 'Editar' }}
+              </button>
+              <button type="button" (click)="removeBlock(block.id)">Quitar</button>
+            </div>
+          </div>
+
+          @if (isEditingBlock(block.id)) {
+            <div class="edit-grid">
+              <label>
+                Titulo
+                <input
+                  [ngModel]="block.title"
+                  (ngModelChange)="updateTitle(block.id, $event)"
+                />
+              </label>
+
+              <label>
+                Subtitulo
+                <input
+                  [ngModel]="block.subtitle"
+                  (ngModelChange)="updateSubtitle(block.id, $event)"
+                />
+              </label>
+
+              <label>
+                CTA
+                <input
+                  [ngModel]="block.ctaText"
+                  (ngModelChange)="updateCta(block.id, $event)"
+                />
+              </label>
+
+              <label class="wide">
+                Items (coma separada)
+                <textarea
+                  rows="2"
+                  [ngModel]="itemsAsText(block)"
+                  (ngModelChange)="updateItemsFromText(block.id, $event)"
+                ></textarea>
+              </label>
+
+              @if (showImageUploader(block.type)) {
+                <label class="wide">
+                  Imagen
+                  <input type="file" accept="image/*" (change)="onBlockImageUpload(block.id, $event)" />
+                </label>
+              }
+            </div>
+          }
+        </section>
+      </div>
+    </article>
+  }
+
   <div class="actions">
     <button type="button" (click)="emit('addText')">Titulo o texto</button>
     <button type="button" (click)="emit('addBlock')">Bloque destacado</button>
