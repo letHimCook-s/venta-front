@@ -1,0 +1,58 @@
+<article class="editor-card" *ngIf="isBrowser; else ssrNotice">
+  <header class="editor-header">
+    <h3>Editor visual del landing</h3>
+    <p>Personaliza por bloques y secciones para escalar sin un solo archivo gigante.</p>
+  </header>
+
+  <section class="section-selector">
+    <label for="landingSection">Seccion a editar</label>
+    <select
+      id="landingSection"
+      [ngModel]="selectedSection"
+      (ngModelChange)="onSectionChange($event)"
+    >
+      <option *ngFor="let option of sections" [value]="option.id">
+        {{ option.label }}
+      </option>
+    </select>
+  </section>
+
+  <app-landing-navbar-options
+    *ngIf="selectedSection === 'navbar'"
+    [imageUrl]="imageUrl"
+    (imageUrlChange)="imageUrl = $event"
+    (action)="onAction($event)"
+  />
+
+  <app-landing-body-options
+    *ngIf="selectedSection === 'hero'"
+    sectionLabel="Opciones de Hero / Carrusel"
+    [imageUrl]="imageUrl"
+    (imageUrlChange)="imageUrl = $event"
+    (action)="onAction($event)"
+  />
+
+  <app-landing-body-options
+    *ngIf="selectedSection === 'products'"
+    sectionLabel="Opciones de productos y subcategorias"
+    [imageUrl]="imageUrl"
+    (imageUrlChange)="imageUrl = $event"
+    (action)="onAction($event)"
+  />
+
+  <app-landing-footer-options
+    *ngIf="selectedSection === 'footer'"
+    (action)="onAction($event)"
+  />
+
+  <section class="canvas-wrap">
+    <canvas #editorCanvas></canvas>
+  </section>
+</article>
+
+<ng-template #ssrNotice>
+  <article class="editor-card">
+    <h3>Editor visual del landing</h3>
+    <p>Disponible en navegador para administrar navbar, carrusel, productos y footer.</p>
+  </article>
+</ng-template>

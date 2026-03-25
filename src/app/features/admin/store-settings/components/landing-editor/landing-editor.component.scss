@@ -1,0 +1,50 @@
+.editor-card {
+  display: grid;
+  gap: 1rem;
+  padding: 1rem;
+  border-radius: 1rem;
+  background: #ffffff;
+  border: 1px solid #dbe3ee;
+}
+
+.editor-header h3 {
+  margin: 0;
+  font-size: 1.2rem;
+}
+
+.editor-header p {
+  margin: 0.35rem 0 0;
+  color: #475569;
+}
+
+.section-selector {
+  display: grid;
+  gap: 0.35rem;
+  max-width: 420px;
+}
+
+label {
+  font-weight: 600;
+}
+
+select {
+  width: 100%;
+  padding: 0.55rem 0.7rem;
+  border: 1px solid #cdd8e5;
+  border-radius: 0.65rem;
+  font: inherit;
+}
+
+.canvas-wrap {
+  max-width: 100%;
+  overflow-x: auto;
+  border: 1px solid #d8e0ea;
+  border-radius: 0.85rem;
+  background: #f8fafc;
+  padding: 0.75rem;
+}
+
+canvas {
+  display: block;
+  border-radius: 0.5rem;
+}

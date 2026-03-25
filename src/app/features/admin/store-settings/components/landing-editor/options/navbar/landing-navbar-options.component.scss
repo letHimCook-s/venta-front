@@ -1,0 +1,45 @@
+.options-panel {
+  display: grid;
+  gap: 0.75rem;
+}
+
+h4 {
+  margin: 0;
+}
+
+p {
+  margin: 0;
+  color: #475569;
+}
+
+.actions,
+.save-actions,
+.image-tools {
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+input {
+  min-width: 280px;
+  flex: 1;
+  padding: 0.55rem 0.7rem;
+  border: 1px solid #cdd8e5;
+  border-radius: 0.65rem;
+  font: inherit;
+}
+
+button {
+  border: 1px solid #bfccdb;
+  background: #f8fafc;
+  color: #0f172a;
+  border-radius: 0.65rem;
+  padding: 0.5rem 0.75rem;
+  cursor: pointer;
+}
+
+button.primary {
+  background: #0ea5e9;
+  color: #ffffff;
+  border-color: #0ea5e9;
+}

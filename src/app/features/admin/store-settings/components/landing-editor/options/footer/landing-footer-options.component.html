@@ -1,0 +1,16 @@
+<section class="options-panel">
+  <h4>Opciones de footer</h4>
+  <p>Configura textos legales, redes, metodos de pago y contacto.</p>
+
+  <div class="actions">
+    <button type="button" (click)="emit('addText')">Agregar texto</button>
+    <button type="button" (click)="emit('addBlock')">Agregar bloque</button>
+    <button type="button" (click)="emit('removeSelected')">Eliminar</button>
+    <button type="button" (click)="emit('clearCanvas')">Limpiar</button>
+  </div>
+
+  <div class="save-actions">
+    <button type="button" class="primary" (click)="emit('saveSection')">Guardar footer</button>
+    <button type="button" (click)="emit('resetSection')">Reiniciar footer</button>
+  </div>
+</section>
