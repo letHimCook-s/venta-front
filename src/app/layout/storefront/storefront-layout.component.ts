@@ -169,7 +169,8 @@ export class StorefrontLayoutComponent implements OnInit, OnDestroy {
 
   private isIconVisible(icon: NavbarIcon): boolean {
     if (icon === 'user') {
-      return this.navbarConfig.showUserIcon;
+      // Keep user access visible while authenticated so logout is always reachable.
+      return this.navbarConfig.showUserIcon || !!this.authSession;
     }
 
     return this.navbarConfig.showCartIcon;

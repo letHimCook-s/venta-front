@@ -55,6 +55,7 @@ export class LandingBodyOptionsComponent {
       subtitle: this.defaultSubtitle(type),
       items: this.defaultItems(type),
       imageUrl: null,
+      imageUrls: [],
       ctaText: this.defaultCta(type)
     };
 
@@ -144,28 +145,94 @@ export class LandingBodyOptionsComponent {
     return block.items.join(', ');
   }
 
-  onBlockImageUpload(blockId: string, event: Event): void {
+  async onBlockImageUpload(blockId: string, event: Event): Promise<void> {
     const input = event.target as HTMLInputElement;
-    const file = input.files?.[0];
-    if (!file) {
+    const files = input.files ? Array.from(input.files) : [];
+    if (files.length === 0) {
       return;
     }
 
-    const reader = new FileReader();
-    reader.onload = () => {
-      const result = typeof reader.result === 'string' ? reader.result : null;
-      const block = this.bodyConfig.blocks.find((item) => item.id === blockId);
-      if (!block) {
-        return;
-      }
+    const block = this.bodyConfig.blocks.find((item) => item.id === blockId);
+    if (!block) {
+      return;
+    }
 
+    const uploadedUrls = await this.readFilesAsDataUrls(files);
+    if (uploadedUrls.length === 0) {
+      return;
+    }
+
+    if (block.type === 'image-carousel') {
       this.updateBlock(blockId, {
         ...block,
-        imageUrl: result
+        imageUrls: [...(block.imageUrls ?? []), ...uploadedUrls],
+        imageUrl: uploadedUrls[0]
       });
-    };
+    } else {
+      this.updateBlock(blockId, {
+        ...block,
+        imageUrl: uploadedUrls[0]
+      });
+    }
 
-    reader.readAsDataURL(file);
+    input.value = '';
+  }
+
+  carouselImages(block: LandingBodyBlock): string[] {
+    if (block.type !== 'image-carousel') {
+      return [];
+    }
+
+    const ordered = Array.isArray(block.imageUrls) ? [...block.imageUrls] : [];
+    if (ordered.length > 0) {
+      return ordered;
+    }
+
+    return block.imageUrl ? [block.imageUrl] : [];
+  }
+
+  moveCarouselImage(blockId: string, index: number, direction: 'up' | 'down'): void {
+    const block = this.bodyConfig.blocks.find((item) => item.id === blockId);
+    if (!block || block.type !== 'image-carousel') {
+      return;
+    }
+
+    const images = this.carouselImages(block);
+    const targetIndex = direction === 'up' ? index - 1 : index + 1;
+
+    if (targetIndex < 0 || targetIndex >= images.length) {
+      return;
+    }
+
+    const reordered = [...images];
+    const [moved] = reordered.splice(index, 1);
+    reordered.splice(targetIndex, 0, moved);
+
+    this.updateBlock(blockId, {
+      ...block,
+      imageUrls: reordered,
+      imageUrl: reordered[0] ?? null
+    });
+  }
+
+  removeCarouselImage(blockId: string, index: number): void {
+    const block = this.bodyConfig.blocks.find((item) => item.id === blockId);
+    if (!block || block.type !== 'image-carousel') {
+      return;
+    }
+
+    const images = this.carouselImages(block);
+    if (index < 0 || index >= images.length) {
+      return;
+    }
+
+    const nextImages = images.filter((_, imageIndex) => imageIndex !== index);
+
+    this.updateBlock(blockId, {
+      ...block,
+      imageUrls: nextImages,
+      imageUrl: nextImages[0] ?? null
+    });
   }
 
   showImageUploader(type: LandingBodyBlockType): boolean {
@@ -215,8 +282,35 @@ export class LandingBodyOptionsComponent {
     }
 
     this.bodyConfig = {
-      blocks: [...raw.blocks]
+      blocks: raw.blocks.map((block) => this.normalizeBlock(block))
     };
+  }
+
+  private normalizeBlock(block: LandingBodyBlock): LandingBodyBlock {
+    return {
+      ...block,
+      imageUrls: Array.isArray(block.imageUrls)
+        ? [...block.imageUrls]
+        : block.imageUrl
+          ? [block.imageUrl]
+          : []
+    };
+  }
+
+  private async readFilesAsDataUrls(files: File[]): Promise<string[]> {
+    const results = await Promise.all(
+      files.map(
+        (file) =>
+          new Promise<string | null>((resolve) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(typeof reader.result === 'string' ? reader.result : null);
+            reader.onerror = () => resolve(null);
+            reader.readAsDataURL(file);
+          })
+      )
+    );
+
+    return results.filter((value): value is string => typeof value === 'string');
   }
 
   private persistBodyConfig(): void {

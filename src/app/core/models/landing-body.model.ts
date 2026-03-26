@@ -12,6 +12,7 @@ export interface LandingBodyBlock {
   subtitle: string;
   items: string[];
   imageUrl: string | null;
+  imageUrls?: string[];
   ctaText: string;
 }
 
@@ -37,6 +38,7 @@ export function createDefaultLandingBodyConfig(): LandingBodyConfig {
         subtitle: 'Banner principal con CTA y visual destacado.',
         items: ['Slide principal', 'Slide promociones', 'Slide novedades'],
         imageUrl: null,
+        imageUrls: [],
         ctaText: 'Comprar ahora'
       },
       {
@@ -46,6 +48,7 @@ export function createDefaultLandingBodyConfig(): LandingBodyConfig {
         subtitle: 'Cinta continua de marcas destacadas.',
         items: ['Razer', 'Corsair', 'Redragon', 'HyperX', 'Logitech'],
         imageUrl: null,
+        imageUrls: [],
         ctaText: 'Ver marcas'
       },
       {
@@ -55,6 +58,7 @@ export function createDefaultLandingBodyConfig(): LandingBodyConfig {
         subtitle: 'Tarjetas de productos con desplazamiento horizontal.',
         items: ['Audifono Pro X', 'Mouse RGB', 'Teclado Mecanico', 'Laptop Gamer'],
         imageUrl: null,
+        imageUrls: [],
         ctaText: 'Explorar catalogo'
       },
       {
@@ -64,6 +68,7 @@ export function createDefaultLandingBodyConfig(): LandingBodyConfig {
         subtitle: 'Grilla de productos en promocion.',
         items: ['Oferta Laptop', 'Oferta Monitor', 'Oferta Setup RGB', 'Oferta Combo Gamer'],
         imageUrl: null,
+        imageUrls: [],
         ctaText: 'Ver ofertas'
       }
     ]
@@ -89,6 +94,11 @@ export function isLandingBodyConfig(value: unknown): value is LandingBodyConfig 
         ((block as Partial<LandingBodyBlock>).items ?? []).every((item) => typeof item === 'string') &&
         (typeof (block as Partial<LandingBodyBlock>).imageUrl === 'string' ||
           (block as Partial<LandingBodyBlock>).imageUrl === null) &&
+        ((block as Partial<LandingBodyBlock>).imageUrls === undefined ||
+          (Array.isArray((block as Partial<LandingBodyBlock>).imageUrls) &&
+            ((block as Partial<LandingBodyBlock>).imageUrls ?? []).every(
+              (imageUrl) => typeof imageUrl === 'string'
+            ))) &&
         typeof (block as Partial<LandingBodyBlock>).ctaText === 'string' &&
         isLandingBodyBlockType((block as Partial<LandingBodyBlock>).type)
     )

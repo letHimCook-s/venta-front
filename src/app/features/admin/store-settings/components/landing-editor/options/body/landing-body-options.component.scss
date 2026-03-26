@@ -133,6 +133,97 @@ button.plus {
   font: inherit;
 }
 
+.single-preview-wrap {
+  border: 1px solid #dbe3ee;
+  border-radius: 0.65rem;
+  padding: 0.55rem;
+  background: #f8fafc;
+  display: grid;
+  gap: 0.45rem;
+}
+
+.single-preview-image {
+  width: 100%;
+  max-height: 220px;
+  object-fit: cover;
+  border-radius: 0.55rem;
+  border: 1px solid #d8e2ef;
+}
+
+.carousel-preview-wrap {
+  border: 1px solid #dbe3ee;
+  border-radius: 0.65rem;
+  padding: 0.55rem;
+  background: #f8fafc;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.preview-title {
+  margin: 0;
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: #334155;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.carousel-preview-grid {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.carousel-image-card {
+  display: grid;
+  gap: 0.45rem;
+  border: 1px solid #d8e2ef;
+  border-radius: 0.55rem;
+  background: #ffffff;
+  padding: 0.45rem;
+}
+
+.carousel-image-card img {
+  width: 100%;
+  height: 140px;
+  object-fit: cover;
+  border-radius: 0.45rem;
+}
+
+.carousel-image-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.4rem;
+}
+
+.carousel-image-meta span {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.carousel-order-actions {
+  display: flex;
+  gap: 0.35rem;
+}
+
+.carousel-order-actions button {
+  padding: 0.3rem 0.45rem;
+  border-radius: 0.45rem;
+  font-size: 0.72rem;
+}
+
+.carousel-order-actions button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.empty-preview {
+  margin: 0;
+  font-size: 0.75rem;
+  color: #64748b;
+}
+
 button {
   border: 1px solid #bfccdb;
   background: #f8fafc;

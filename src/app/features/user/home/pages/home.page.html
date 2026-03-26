@@ -82,7 +82,22 @@
       </div>
 
       <div class="mt-4">
-        @if (block.imageUrl && showImageUploader(block.type)) {
+        @if (block.type === 'image-carousel' && carouselImages(block).length > 0) {
+          <img
+            [src]="carouselImages(block)[0]"
+            alt="Preview principal del carrusel"
+            class="mb-3 h-44 w-full rounded-lg border border-current/20 object-cover"
+          />
+
+          <div class="mb-3 grid grid-cols-4 gap-2">
+            <img
+              *ngFor="let image of carouselImages(block) | slice: 0 : 8"
+              [src]="image"
+              alt="Miniatura del carrusel"
+              class="h-16 w-full rounded-md border border-current/20 object-cover"
+            />
+          </div>
+        } @else if (block.imageUrl && showImageUploader(block.type)) {
           <img
             [src]="block.imageUrl"
             alt="Preview del bloque"
@@ -147,14 +162,65 @@
 
           @if (showImageUploader(block.type)) {
             <label class="grid gap-1 text-xs font-semibold uppercase tracking-wide">
-              Imagen
+              {{ block.type === 'image-carousel' ? 'Imagenes del carrusel' : 'Imagen' }}
               <input
                 type="file"
                 accept="image/*"
+                [attr.multiple]="block.type === 'image-carousel' ? '' : null"
                 class="rounded-md border border-current/20 bg-white/90 px-2 py-1.5 text-xs text-slate-900"
                 (change)="onBlockImageUpload(block.id, $event)"
               />
             </label>
+
+            @if (block.type === 'image-carousel') {
+              <div class="grid gap-2 rounded-md border border-current/20 bg-black/10 p-2">
+                <p class="text-[11px] font-bold uppercase tracking-wide opacity-90">
+                  Orden del carrusel
+                </p>
+
+                @if (carouselImages(block).length > 0) {
+                  <div class="grid gap-2">
+                    <div
+                      *ngFor="let image of carouselImages(block); let i = index"
+                      class="grid grid-cols-[72px_1fr] items-center gap-2 rounded-md border border-current/20 bg-white/10 p-2"
+                    >
+                      <img [src]="image" [alt]="'Slide ' + (i + 1)" class="h-12 w-full rounded object-cover" />
+
+                      <div class="flex items-center justify-between gap-2">
+                        <span class="text-[11px] font-semibold">Slide {{ i + 1 }}</span>
+                        <div class="flex gap-1">
+                          <button
+                            type="button"
+                            class="rounded border border-current/25 px-2 py-1 text-[11px] font-bold"
+                            [disabled]="i === 0"
+                            (click)="moveCarouselImage(block.id, i, 'up')"
+                          >
+                            Subir
+                          </button>
+                          <button
+                            type="button"
+                            class="rounded border border-current/25 px-2 py-1 text-[11px] font-bold"
+                            [disabled]="i === carouselImages(block).length - 1"
+                            (click)="moveCarouselImage(block.id, i, 'down')"
+                          >
+                            Bajar
+                          </button>
+                          <button
+                            type="button"
+                            class="rounded border border-rose-300 px-2 py-1 text-[11px] font-bold"
+                            (click)="removeCarouselImage(block.id, i)"
+                          >
+                            Quitar
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                } @else {
+                  <p class="text-[11px] opacity-85">Aun no hay imagenes para este carrusel.</p>
+                }
+              </div>
+            }
           }
         </div>
       }

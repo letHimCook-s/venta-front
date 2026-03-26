@@ -39,6 +39,15 @@
         Subir logo
         <input type="file" accept="image/*" (change)="onLogoUpload($event)" />
       </label>
+
+      <div class="wide logo-preview-wrap">
+        <p class="preview-title">Vista previa del logo</p>
+        @if (navbarConfig.logoUrl) {
+          <img [src]="navbarConfig.logoUrl" alt="Vista previa del logo" class="logo-preview-image" />
+        } @else {
+          <p class="empty-preview">Aun no has cargado un logo.</p>
+        }
+      </div>
     }
   </div>
 

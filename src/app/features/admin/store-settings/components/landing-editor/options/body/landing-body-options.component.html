@@ -73,9 +73,58 @@
 
               @if (showImageUploader(block.type)) {
                 <label class="wide">
-                  Imagen
-                  <input type="file" accept="image/*" (change)="onBlockImageUpload(block.id, $event)" />
+                  {{ block.type === 'image-carousel' ? 'Imagenes del carrusel' : 'Imagen' }}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    [attr.multiple]="block.type === 'image-carousel' ? '' : null"
+                    (change)="onBlockImageUpload(block.id, $event)"
+                  />
                 </label>
+
+                @if (block.type !== 'image-carousel') {
+                  <div class="wide single-preview-wrap">
+                    <p class="preview-title">Vista previa</p>
+                    @if (block.imageUrl) {
+                      <img [src]="block.imageUrl" alt="Vista previa de imagen" class="single-preview-image" />
+                    } @else {
+                      <p class="empty-preview">Aun no se ha cargado una imagen.</p>
+                    }
+                  </div>
+                }
+
+                @if (block.type === 'image-carousel') {
+                  <div class="wide carousel-preview-wrap">
+                    <p class="preview-title">Vista previa y orden del carrusel</p>
+
+                    @if (carouselImages(block).length > 0) {
+                      <div class="carousel-preview-grid">
+                        <article class="carousel-image-card" *ngFor="let image of carouselImages(block); let i = index">
+                          <img [src]="image" [alt]="'Slide ' + (i + 1)" />
+
+                          <div class="carousel-image-meta">
+                            <span>Slide {{ i + 1 }}</span>
+                            <div class="carousel-order-actions">
+                              <button type="button" (click)="moveCarouselImage(block.id, i, 'up')" [disabled]="i === 0">
+                                Subir
+                              </button>
+                              <button
+                                type="button"
+                                (click)="moveCarouselImage(block.id, i, 'down')"
+                                [disabled]="i === carouselImages(block).length - 1"
+                              >
+                                Bajar
+                              </button>
+                              <button type="button" (click)="removeCarouselImage(block.id, i)">Quitar</button>
+                            </div>
+                          </div>
+                        </article>
+                      </div>
+                    } @else {
+                      <p class="empty-preview">Aun no hay imagenes en este carrusel.</p>
+                    }
+                  </div>
+                }
               }
             </div>
           }
@@ -99,6 +148,15 @@
       placeholder="https://.../banner.jpg"
     />
     <button type="button" (click)="emit('addImage')">Agregar imagen</button>
+  </div>
+
+  <div class="single-preview-wrap">
+    <p class="preview-title">Vista previa de URL</p>
+    @if (imageUrl) {
+      <img [src]="imageUrl" alt="Vista previa por URL" class="single-preview-image" />
+    } @else {
+      <p class="empty-preview">Escribe una URL de imagen para previsualizarla aqui.</p>
+    }
   </div>
 
   <div class="save-actions">

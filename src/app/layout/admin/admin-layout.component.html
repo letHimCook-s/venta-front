@@ -1,24 +1,157 @@
-<div class="grid min-h-screen grid-cols-1 md:grid-cols-[240px_1fr]">
-  <aside class="border-b border-slate-200 bg-white p-4 md:border-b-0 md:border-r">
-    <h2 class="mb-3 text-lg font-black tracking-tight text-slate-900">Admin</h2>
-    <nav class="grid gap-2">
-      <a class="rounded-lg px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100" routerLink="/tienda">Ver tienda en linea</a>
-      <a class="rounded-lg px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100" routerLink="dashboard">Dashboard</a>
-      <a class="rounded-lg px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100" routerLink="products">Productos</a>
-      <a class="rounded-lg px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100" routerLink="categories">Categorias</a>
-      <a class="rounded-lg px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100" routerLink="attributes">Atributos</a>
-      <a class="rounded-lg px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100" routerLink="offers">Ofertas</a>
-      <a class="rounded-lg px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100" routerLink="store-settings">Tienda</a>
+<div class="admin-shell grid min-h-screen grid-cols-1 bg-slate-100" [class.sidebar-collapsed]="isSidebarCollapsed">
+  <aside class="border-b border-slate-200 bg-gradient-to-b from-slate-950 to-slate-900 p-4 text-slate-100 md:border-b-0 md:border-r md:border-slate-800 md:p-5">
+    @if (!isSidebarCollapsed) {
+      <div class="sidebar-header-row">
+        <p class="sidebar-header-title">Panel administrativo</p>
+        <button
+          type="button"
+          class="sidebar-toggle-btn"
+          (click)="toggleSidebar()"
+          aria-label="Comprimir sidebar"
+          title="Comprimir sidebar"
+        >
+          <img [src]="icons.chevronBack" alt="" class="icon-img" aria-hidden="true" />
+        </button>
+      </div>
+    } @else {
       <button
         type="button"
-        class="rounded-lg border border-slate-200 px-3 py-2 text-left text-sm font-semibold text-slate-700 hover:bg-slate-100"
-        (click)="logout()"
+        class="sidebar-toggle-btn"
+        (click)="toggleSidebar()"
+        aria-label="Expandir sidebar"
+        title="Expandir sidebar"
       >
-        Cerrar sesion
+        <img [src]="icons.chevronForward" alt="" class="icon-img" aria-hidden="true" />
       </button>
+    }
+
+    <nav class="grid gap-4" [class.mt-4]="!isSidebarCollapsed" [class.mt-2]="isSidebarCollapsed">
+      @if (!isSidebarCollapsed) {
+        <div class="grid gap-1.5">
+          <button
+            type="button"
+            class="section-toggle"
+            (click)="toggleSection('navegacion')"
+          >
+            <span>Navegacion</span>
+            <img [src]="sectionState.navegacion ? icons.chevronDown : icons.chevronForward" alt="" class="icon-img" aria-hidden="true" />
+          </button>
+
+          @if (sectionState.navegacion) {
+            <div class="section-links">
+              <a class="sidebar-link" routerLink="/tienda">
+                <img [src]="icons.tienda" alt="" class="icon-img" aria-hidden="true" />
+                <span>Ver tienda en linea</span>
+              </a>
+
+              <a
+                class="sidebar-link"
+                routerLink="dashboard"
+                routerLinkActive="border-cyan-400/50 bg-cyan-500/15 text-cyan-200"
+                [routerLinkActiveOptions]="{ exact: true }"
+              >
+                <img [src]="icons.dashboard" alt="" class="icon-img" aria-hidden="true" />
+                <span>Dashboard</span>
+              </a>
+            </div>
+          }
+        </div>
+
+        <div class="grid gap-1.5">
+          <button
+            type="button"
+            class="section-toggle"
+            (click)="toggleSection('catalogo')"
+          >
+            <span>Catalogo</span>
+            <img [src]="sectionState.catalogo ? icons.chevronDown : icons.chevronForward" alt="" class="icon-img" aria-hidden="true" />
+          </button>
+
+          @if (sectionState.catalogo) {
+            <div class="section-links">
+              <a class="sidebar-link" routerLink="products" routerLinkActive="border-cyan-400/50 bg-cyan-500/15 text-cyan-200">
+                <img [src]="icons.productos" alt="" class="icon-img" aria-hidden="true" />
+                <span>Productos</span>
+              </a>
+
+              <a class="sidebar-link" routerLink="categories" routerLinkActive="border-cyan-400/50 bg-cyan-500/15 text-cyan-200">
+                <img [src]="icons.categorias" alt="" class="icon-img" aria-hidden="true" />
+                <span>Categorias</span>
+              </a>
+
+              <a class="sidebar-link" routerLink="attributes" routerLinkActive="border-cyan-400/50 bg-cyan-500/15 text-cyan-200">
+                <img [src]="icons.atributos" alt="" class="icon-img" aria-hidden="true" />
+                <span>Atributos</span>
+              </a>
+
+              <a class="sidebar-link" routerLink="offers" routerLinkActive="border-cyan-400/50 bg-cyan-500/15 text-cyan-200">
+                <img [src]="icons.ofertas" alt="" class="icon-img" aria-hidden="true" />
+                <span>Ofertas</span>
+              </a>
+            </div>
+          }
+        </div>
+
+        <div class="grid gap-1.5">
+          <button
+            type="button"
+            class="section-toggle"
+            (click)="toggleSection('landing')"
+          >
+            <span>Landing</span>
+            <img [src]="sectionState.landing ? icons.chevronDown : icons.chevronForward" alt="" class="icon-img" aria-hidden="true" />
+          </button>
+
+          @if (sectionState.landing) {
+            <div class="section-links">
+              <a class="sidebar-link" routerLink="store-settings" routerLinkActive="border-cyan-400/50 bg-cyan-500/15 text-cyan-200">
+                <img [src]="icons.landing" alt="" class="icon-img" aria-hidden="true" />
+                <span>Configurar landing</span>
+              </a>
+            </div>
+          }
+        </div>
+
+        <button
+          type="button"
+          class="logout-btn"
+          (click)="logout()"
+        >
+          <img [src]="icons.logout" alt="" class="icon-img" aria-hidden="true" />
+          <span>Cerrar sesion</span>
+        </button>
+      } @else {
+        <div class="icon-rail">
+          <a class="icon-link" routerLink="/tienda" title="Ver tienda en linea" aria-label="Ver tienda en linea">
+            <img [src]="icons.tienda" alt="" class="icon-img" aria-hidden="true" />
+          </a>
+          <a class="icon-link" routerLink="dashboard" title="Dashboard" aria-label="Dashboard">
+            <img [src]="icons.dashboard" alt="" class="icon-img" aria-hidden="true" />
+          </a>
+          <a class="icon-link" routerLink="products" title="Productos" aria-label="Productos">
+            <img [src]="icons.productos" alt="" class="icon-img" aria-hidden="true" />
+          </a>
+          <a class="icon-link" routerLink="categories" title="Categorias" aria-label="Categorias">
+            <img [src]="icons.categorias" alt="" class="icon-img" aria-hidden="true" />
+          </a>
+          <a class="icon-link" routerLink="attributes" title="Atributos" aria-label="Atributos">
+            <img [src]="icons.atributos" alt="" class="icon-img" aria-hidden="true" />
+          </a>
+          <a class="icon-link" routerLink="offers" title="Ofertas" aria-label="Ofertas">
+            <img [src]="icons.ofertas" alt="" class="icon-img" aria-hidden="true" />
+          </a>
+          <a class="icon-link" routerLink="store-settings" title="Configurar landing" aria-label="Configurar landing">
+            <img [src]="icons.landing" alt="" class="icon-img" aria-hidden="true" />
+          </a>
+          <button type="button" class="icon-link logout-icon" (click)="logout()" title="Cerrar sesion" aria-label="Cerrar sesion">
+            <img [src]="icons.logout" alt="" class="icon-img" aria-hidden="true" />
+          </button>
+        </div>
+      }
     </nav>
   </aside>
-  <main class="p-4">
+
+  <main class="p-4 md:p-6">
     <router-outlet />
   </main>
 </div>
