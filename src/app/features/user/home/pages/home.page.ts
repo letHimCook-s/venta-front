@@ -2,7 +2,6 @@ import { CommonModule } from '@angular/common';
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Subscription } from 'rxjs';
-import { LandingSection } from '../../../../core/models/landing-config.model';
 import {
   createDefaultLandingBodyConfig,
   isLandingBodyConfig,
@@ -14,12 +13,6 @@ import {
 import { LandingConfigService } from '../../../../core/services/landing-config.service';
 import { AuthService } from '../../../auth/services/auth.service';
 
-interface SectionStatus {
-  id: LandingSection;
-  label: string;
-  customized: boolean;
-}
-
 @Component({
   selector: 'app-user-home-page',
   standalone: true,
@@ -28,7 +21,6 @@ interface SectionStatus {
   styleUrl: './home.page.scss'
 })
 export class UserHomePage implements OnInit, OnDestroy {
-  sectionStatus: SectionStatus[] = [];
   bodyConfig: LandingBodyConfig = createDefaultLandingBodyConfig();
   blockTypes = LANDING_BODY_BLOCK_TYPES;
   isPickerOpen = false;
@@ -45,10 +37,8 @@ export class UserHomePage implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.landingConfigService.init();
     this.isAdminSession = this.authService.isAdmin();
-    this.refreshStatus();
 
     this.configSub = this.landingConfigService.config$.subscribe(() => {
-      this.refreshStatus();
       this.loadBodyConfig();
     });
 
@@ -289,31 +279,6 @@ export class UserHomePage implements OnInit, OnDestroy {
     });
   }
 
-  private refreshStatus(): void {
-    this.sectionStatus = [
-      {
-        id: 'navbar',
-        label: 'Navbar',
-        customized: this.landingConfigService.hasCustomContent('navbar')
-      },
-      {
-        id: 'hero',
-        label: 'Hero / Carrusel',
-        customized: this.landingConfigService.hasCustomContent('hero')
-      },
-      {
-        id: 'products',
-        label: 'Productos / Subcategorias',
-        customized: this.landingConfigService.hasCustomContent('products')
-      },
-      {
-        id: 'footer',
-        label: 'Footer',
-        customized: this.landingConfigService.hasCustomContent('footer')
-      }
-    ];
-  }
-
   private loadBodyConfig(): void {
     const section = this.landingConfigService.getSectionConfig('products');
     const raw = section?.fabricJson;
@@ -337,7 +302,6 @@ export class UserHomePage implements OnInit, OnDestroy {
 
   private persistBodyConfig(): void {
     this.landingConfigService.saveSection('products', this.bodyConfig);
-    this.refreshStatus();
   }
 
   private defaultTitle(type: LandingBodyBlockType): string {

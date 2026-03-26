@@ -227,24 +227,4 @@
     </section>
   </article>
 
-  <article class="grid gap-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-    <h2 class="text-base font-bold text-slate-900">Estado de configuracion visual</h2>
-    <ul class="grid gap-2">
-      <li
-        *ngFor="let section of sectionStatus"
-        class="flex items-center justify-between rounded-lg border border-slate-100 bg-slate-50 px-3 py-2 text-sm"
-      >
-        <span class="font-semibold text-slate-900">{{ section.label }}</span>
-        <span
-          class="rounded-full px-2 py-1 text-xs font-bold"
-          [class.bg-emerald-100]="section.customized"
-          [class.text-emerald-700]="section.customized"
-          [class.bg-amber-100]="!section.customized"
-          [class.text-amber-700]="!section.customized"
-        >
-          {{ section.customized ? 'Personalizado desde Admin' : 'Usando plantilla por defecto' }}
-        </span>
-      </li>
-    </ul>
-  </article>
 </section>
