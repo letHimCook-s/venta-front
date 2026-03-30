@@ -1,4 +1,251 @@
-<article class="card">
-  <h3>Listado de categorias</h3>
-  <p>Tabla de categorias con acciones CRUD.</p>
-</article>
+<section class="workspace-grid" [class.inspector-open]="isInspectorVisible">
+  <article class="card explorer-card">
+    <header class="card-header">
+      <div>
+        <h3>Explorador de categorias</h3>
+        <p>Funciona como arbol de carpetas: expande, colapsa y enfoca solo lo principal.</p>
+
+        <div class="tree-filter-switch">
+          <button
+            type="button"
+            class="tree-filter-btn"
+            [class.active]="treeFilterMode === 'all'"
+            (click)="setTreeFilter('all')"
+          >
+            Todo
+          </button>
+          <button
+            type="button"
+            class="tree-filter-btn"
+            [class.active]="treeFilterMode === 'categories'"
+            (click)="setTreeFilter('categories')"
+          >
+            Categorias
+          </button>
+          <button
+            type="button"
+            class="tree-filter-btn"
+            [class.active]="treeFilterMode === 'attributes'"
+            (click)="setTreeFilter('attributes')"
+          >
+            Atributos
+          </button>
+        </div>
+      </div>
+
+      <div class="toolbar-actions">
+        <button
+          type="button"
+          class="ghost icon-tool-btn"
+          title="Modo compacto"
+          aria-label="Modo compacto"
+          (click)="toggleCompactMode()"
+        >
+          {{ compactMode ? '◪' : '◫' }}
+        </button>
+        <button
+          type="button"
+          class="ghost icon-tool-btn"
+          title="Expandir todo"
+          aria-label="Expandir todo"
+          (click)="expandAllNodes()"
+        >
+          ⤢
+        </button>
+        <button
+          type="button"
+          class="ghost icon-tool-btn"
+          title="Compactar arbol"
+          aria-label="Compactar arbol"
+          (click)="collapseTree()"
+        >
+          ⤡
+        </button>
+      </div>
+    </header>
+
+    <div class="tree-wrap" *ngIf="treeRows.length; else noTreeRows">
+      <div
+        class="tree-row"
+        *ngFor="let row of treeRows"
+        [class.active]="isCategoryRowActive(row)"
+        [class.attribute-active]="isAttributeRowActive(row)"
+      >
+        <div class="tree-main" [style.paddingLeft.px]="row.level * (compactMode ? 14 : 20)">
+          <ng-container *ngIf="row.kind === 'category'; else attributeRow">
+            <button
+              type="button"
+              class="toggle-btn"
+              *ngIf="hasChildren(row.category.node); else leafSpacer"
+              (click)="toggleNode(row.category.node.id, $event)"
+            >
+              {{ isNodeCollapsed(row.category.node.id) ? '▸' : '▾' }}
+            </button>
+
+            <ng-template #leafSpacer>
+              <span class="leaf-spacer"></span>
+            </ng-template>
+
+            <button type="button" class="node-button" (click)="selectCategory(row.category)">
+              <span class="node-name">{{ row.category.node.name }}</span>
+              <span class="node-meta" *ngIf="!compactMode">{{ row.category.path }}</span>
+            </button>
+          </ng-container>
+
+          <ng-template #attributeRow>
+            <span class="leaf-spacer attribute-dot">•</span>
+
+            <button
+              type="button"
+              class="node-button attribute-button"
+              (click)="selectAttributeRow(row)"
+            >
+              <span class="node-name">{{ row.attribute?.name }} ({{ row.attribute?.code }})</span>
+              <span class="node-meta" *ngIf="!compactMode">Atributo en {{ row.category.path }}</span>
+            </button>
+          </ng-template>
+        </div>
+
+        <div class="quick-actions" *ngIf="!compactMode && row.kind === 'category'">
+          <button type="button" class="link" (click)="startNewWithParent(row.category.node.id)">+ Hija</button>
+          <button type="button" class="link" (click)="startEditCategory(row.category)">Editar</button>
+        </div>
+      </div>
+    </div>
+
+    <section class="inspector-trigger" *ngIf="!isInspectorVisible">
+      <p>
+        Selecciona una categoria del arbol o pulsa <strong>Nueva categoria</strong>
+        para mostrar la card de detalle.
+      </p>
+    </section>
+  </article>
+
+  <article class="card inspector-card" *ngIf="isInspectorVisible" [class.is-collapsed]="isInspectorCollapsed">
+    <header class="card-header inspector-header">
+      <div>
+        <h3>Detalle de categoria</h3>
+        <p>Panel lateral compacto para no ocupar espacio cuando no lo necesites.</p>
+      </div>
+
+      <div class="inspector-actions">
+        <button type="button" class="ghost" (click)="toggleInspector()">
+          {{ isInspectorCollapsed ? 'Desplegar' : 'Compactar' }}
+        </button>
+        <button type="button" class="ghost" (click)="closeInspector()">Cerrar</button>
+      </div>
+    </header>
+
+    <div *ngIf="!isInspectorCollapsed" class="inspector-content">
+      <section class="selection-summary" *ngIf="selectedCategory; else noSelection">
+        <p class="path">Ruta: {{ selectedCategoryPath }}</p>
+
+        <div class="summary-actions">
+          <button type="button" class="ghost" (click)="startEditCategory(selectedCategory)">Editar seleccionada</button>
+          <button type="button" class="ghost" (click)="startNewWithParent(selectedCategory.node.id)">Crear hija</button>
+          <button type="button" class="ghost danger" (click)="deleteCategory(selectedCategory.node.id)">Eliminar</button>
+        </div>
+      </section>
+
+      <details class="detail-block" open>
+        <summary>{{ form.id ? 'Formulario de edicion' : 'Formulario de nueva categoria' }}</summary>
+
+        <form (ngSubmit)="submitCategory()" class="form-grid">
+          <label>
+            Nombre de categoria
+            <input
+              type="text"
+              name="categoryName"
+              [(ngModel)]="form.name"
+              placeholder="Ej: Pantalon"
+              required
+            />
+          </label>
+
+          <label>
+            Categoria padre (opcional)
+            <select name="parentId" [(ngModel)]="form.parentId">
+              <option value="">Sin padre (nivel raiz)</option>
+              <option
+                *ngFor="let item of parentOptions; trackBy: trackByCategoryId"
+                [value]="item.node.id"
+              >
+                {{ item.path }}
+              </option>
+            </select>
+          </label>
+
+          <fieldset>
+            <legend>Atributos directos</legend>
+            <p class="hint">Las subcategorias heredan automaticamente los atributos del padre.</p>
+
+            <div class="attribute-list" *ngIf="attributes.length; else noAttributes">
+              <label
+                class="checkbox-item"
+                *ngFor="let attribute of attributes; trackBy: trackByAttributeId"
+              >
+                <input
+                  type="checkbox"
+                  [ngModel]="form.attributeIds.includes(attribute.id)"
+                  (ngModelChange)="toggleAttribute(attribute.id, $event)"
+                  [ngModelOptions]="{ standalone: true }"
+                />
+                <span>{{ attribute.name }} ({{ attribute.code }})</span>
+              </label>
+            </div>
+          </fieldset>
+
+          <div class="form-actions">
+            <button type="submit">{{ form.id ? 'Guardar cambios' : 'Crear categoria' }}</button>
+            <button type="button" class="ghost" (click)="cancelEdit()">Limpiar formulario</button>
+          </div>
+        </form>
+      </details>
+
+      <details class="detail-block" [open]="!compactMode" *ngIf="selectedCategory">
+        <summary>Atributos de la categoria seleccionada</summary>
+
+        <p class="hint">Directos: definidos solo en esta categoria.</p>
+        <div class="chips" *ngIf="selectedDirectAttributes.length; else noDirectAttributes">
+          <span class="chip" *ngFor="let attribute of selectedDirectAttributes; trackBy: trackByAttributeId">
+            {{ getAttributeTag(attribute) }}
+          </span>
+        </div>
+
+        <p class="hint">Efectivos: directos + heredados por la jerarquia.</p>
+        <div class="chips" *ngIf="selectedResolvedAttributes.length; else noResolvedAttributes">
+          <span class="chip" *ngFor="let attribute of selectedResolvedAttributes; trackBy: trackByAttributeId">
+            {{ getAttributeTag(attribute) }}
+          </span>
+        </div>
+      </details>
+
+      <p class="feedback ok" *ngIf="feedbackMessage">{{ feedbackMessage }}</p>
+      <p class="feedback error" *ngIf="errorMessage">{{ errorMessage }}</p>
+    </div>
+  </article>
+</section>
+
+<ng-template #noCategories>
+  <p class="hint">No hay categorias todavia. Crea la primera como categoria raiz.</p>
+</ng-template>
+
+<ng-template #noTreeRows>
+  <p class="hint">{{ treeEmptyMessage }}</p>
+</ng-template>
+
+<ng-template #noAttributes>
+  <p class="hint">Primero crea atributos en la seccion de Atributos.</p>
+</ng-template>
+
+<ng-template #noSelection>
+  <p class="hint">Selecciona una categoria del arbol para ver su detalle.</p>
+</ng-template>
+
+<ng-template #noDirectAttributes>
+  <p class="hint">No hay atributos directos en esta categoria.</p>
+</ng-template>
+
+<ng-template #noResolvedAttributes>
+  <p class="hint">Esta categoria no tiene atributos directos ni heredados.</p>
+</ng-template>

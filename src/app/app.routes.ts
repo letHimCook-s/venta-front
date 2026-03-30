@@ -67,10 +67,7 @@ export const routes: Routes = [
 			},
 			{
 				path: 'attributes',
-				loadComponent: () =>
-					import('./features/admin/attributes/pages/attributes.page').then(
-						(m) => m.AdminAttributesPage
-					)
+				redirectTo: 'categories'
 			},
 			{
 				path: 'offers',

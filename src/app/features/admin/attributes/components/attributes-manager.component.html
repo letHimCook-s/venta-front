@@ -1,4 +1,100 @@
-<article class="card">
-  <h3>Administrador de atributos</h3>
-  <p>Gestiona atributos y sus valores disponibles.</p>
-</article>
+<section class="manager-grid">
+  <article class="card form-card">
+    <header>
+      <h3>{{ form.id ? 'Editar atributo' : 'Nuevo atributo' }}</h3>
+      <p>Usa codigo corto para reutilizar el atributo en categorias diferentes.</p>
+    </header>
+
+    <form class="form-grid" (ngSubmit)="submitAttribute()">
+      <label>
+        Nombre
+        <input
+          type="text"
+          name="name"
+          [(ngModel)]="form.name"
+          placeholder="Ej: Talla"
+          required
+        />
+      </label>
+
+      <label>
+        Codigo
+        <input
+          type="text"
+          name="code"
+          [(ngModel)]="form.code"
+          placeholder="Ej: talla"
+        />
+      </label>
+
+      <label>
+        Tipo de dato
+        <select name="valueType" [(ngModel)]="form.valueType">
+          <option *ngFor="let item of valueTypeOptions" [value]="item.value">{{ item.label }}</option>
+        </select>
+      </label>
+
+      <label *ngIf="shouldShowOptions()">
+        Opciones separadas por coma
+        <input
+          type="text"
+          name="options"
+          [(ngModel)]="form.optionsInput"
+          placeholder="Ej: S, M, L, XL"
+        />
+      </label>
+
+      <label class="checkbox-item">
+        <input type="checkbox" name="required" [(ngModel)]="form.required" />
+        <span>Requerido para productos de la categoria</span>
+      </label>
+
+      <div class="form-actions">
+        <button type="submit">{{ form.id ? 'Guardar cambios' : 'Crear atributo' }}</button>
+        <button type="button" class="ghost" (click)="cancelEdit()">Limpiar</button>
+      </div>
+    </form>
+
+    <p class="feedback ok" *ngIf="feedbackMessage">{{ feedbackMessage }}</p>
+    <p class="feedback error" *ngIf="errorMessage">{{ errorMessage }}</p>
+  </article>
+
+  <article class="card table-card">
+    <header>
+      <h3>Listado de atributos</h3>
+      <p>Visualiza en que categorias se usa cada atributo directo.</p>
+    </header>
+
+    <div class="table-wrap" *ngIf="attributes.length; else noAttributes">
+      <table>
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>Codigo</th>
+            <th>Tipo</th>
+            <th>Uso directo</th>
+            <th>Categorias</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let attribute of attributes; trackBy: trackByAttributeId">
+            <td>{{ attribute.name }}</td>
+            <td>{{ attribute.code }}</td>
+            <td>{{ attribute.valueType }}</td>
+            <td>{{ getUsage(attribute.id) }}</td>
+            <td>{{ getCategoryPaths(attribute.id) }}</td>
+            <td class="row-actions">
+              <button type="button" class="link" (click)="startEdit(attribute)">Editar</button>
+              <button type="button" class="link danger" (click)="deleteAttribute(attribute.id)">Eliminar</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </article>
+</section>
+
+<ng-template #noAttributes>
+  <p class="hint">No hay atributos registrados todavia.</p>
+</ng-template>

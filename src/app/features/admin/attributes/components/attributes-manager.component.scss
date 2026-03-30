@@ -1,5 +1,131 @@
+.manager-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+}
+
 .card {
+  background: #ffffff;
+  border: 1px solid #dbe3ee;
+  border-radius: 0.75rem;
   padding: 1rem;
-  border: 1px solid #d8d8d8;
+  box-shadow: 0 8px 30px -24px rgba(15, 23, 42, 0.45);
+}
+
+header h3 {
+  margin: 0;
+  color: #0f172a;
+}
+
+header p {
+  margin: 0.4rem 0 1rem;
+  color: #475569;
+}
+
+.form-grid {
+  display: grid;
+  gap: 0.85rem;
+}
+
+label {
+  display: grid;
+  gap: 0.45rem;
+  color: #1e293b;
+}
+
+input,
+select {
+  border: 1px solid #c9d6e7;
   border-radius: 0.5rem;
+  padding: 0.5rem 0.6rem;
+  font: inherit;
+  color: #0f172a;
+  background: #fff;
+}
+
+.checkbox-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+button {
+  border: 1px solid transparent;
+  background: #0f172a;
+  color: #fff;
+  border-radius: 0.5rem;
+  padding: 0.5rem 0.8rem;
+  font: inherit;
+  cursor: pointer;
+}
+
+button.ghost {
+  background: #fff;
+  color: #0f172a;
+  border-color: #c9d6e7;
+}
+
+.table-wrap {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  padding: 0.65rem 0.5rem;
+  border-bottom: 1px solid #ecf0f6;
+  text-align: left;
+  color: #1e293b;
+  vertical-align: top;
+}
+
+th {
+  color: #334155;
+  font-weight: 600;
+}
+
+.row-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.2rem 0.5rem;
+}
+
+button.link {
+  padding: 0;
+  background: transparent;
+  color: #0f4c81;
+  border: 0;
+}
+
+button.link.danger {
+  color: #b91c1c;
+}
+
+.hint {
+  margin: 0;
+  color: #64748b;
+  font-size: 0.9rem;
+}
+
+.feedback {
+  margin: 0.8rem 0 0;
+  font-size: 0.92rem;
+}
+
+.feedback.ok {
+  color: #166534;
+}
+
+.feedback.error {
+  color: #b91c1c;
 }
