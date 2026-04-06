@@ -283,6 +283,97 @@ export class CatalogTaxonomyService {
     });
   }
 
+  moveCategory(categoryId: string, newParentId: string | null): void {
+    const state = this.stateSubject.value;
+    const movingCategory = state.categories.find((item) => item.id === categoryId);
+
+    if (!movingCategory) {
+      throw new Error('La categoria a mover no existe.');
+    }
+
+    const cleanParentId = newParentId?.trim() ? newParentId : null;
+
+    if (cleanParentId === movingCategory.id) {
+      throw new Error('Una categoria no puede ser su propio padre.');
+    }
+
+    if (cleanParentId) {
+      const parentExists = state.categories.some((item) => item.id === cleanParentId);
+      if (!parentExists) {
+        throw new Error('La categoria destino no existe.');
+      }
+
+      const descendants = this.getDescendantIds(movingCategory.id);
+      if (descendants.includes(cleanParentId)) {
+        throw new Error('No puedes mover una categoria dentro de una subcategoria propia.');
+      }
+    }
+
+    if (movingCategory.parentId === cleanParentId) {
+      return;
+    }
+
+    const nextCategories = state.categories.map((item) =>
+      item.id === movingCategory.id
+        ? {
+            ...item,
+            parentId: cleanParentId
+          }
+        : item
+    );
+
+    this.commitState({
+      ...state,
+      categories: this.rebuildTreeLinks(nextCategories),
+      updatedAt: new Date().toISOString()
+    });
+  }
+
+  moveAttribute(attributeId: string, fromCategoryId: string, toCategoryId: string): void {
+    if (fromCategoryId === toCategoryId) {
+      return;
+    }
+
+    const state = this.stateSubject.value;
+    const sourceCategory = state.categories.find((item) => item.id === fromCategoryId);
+    const targetCategory = state.categories.find((item) => item.id === toCategoryId);
+    const attributeExists = state.attributes.some((item) => item.id === attributeId);
+
+    if (!attributeExists) {
+      throw new Error('El atributo seleccionado no existe.');
+    }
+
+    if (!sourceCategory || !targetCategory) {
+      throw new Error('No se encontro la categoria de origen o destino.');
+    }
+
+    const nextCategories = state.categories.map((item) => {
+      if (item.id === fromCategoryId) {
+        return {
+          ...item,
+          attributeIds: item.attributeIds.filter((itemId) => itemId !== attributeId)
+        };
+      }
+
+      if (item.id === toCategoryId) {
+        return {
+          ...item,
+          attributeIds: item.attributeIds.includes(attributeId)
+            ? item.attributeIds
+            : [...item.attributeIds, attributeId]
+        };
+      }
+
+      return item;
+    });
+
+    this.commitState({
+      ...state,
+      categories: nextCategories,
+      updatedAt: new Date().toISOString()
+    });
+  }
+
   private buildSeedState(): CatalogTaxonomyState {
     const attributes: CatalogAttribute[] = [
       {

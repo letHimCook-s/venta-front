@@ -2,9 +2,6 @@
   <article class="card explorer-card">
     <header class="card-header">
       <div>
-        <h3>Explorador de categorias</h3>
-        <p>Funciona como arbol de carpetas: expande, colapsa y enfoca solo lo principal.</p>
-
         <div class="tree-filter-switch">
           <button
             type="button"
@@ -64,14 +61,38 @@
       </div>
     </header>
 
+    <div
+      class="tree-drop-root"
+      [class.root-drop-active]="isRootDropActive"
+      (dragover)="onRootDragOver($event)"
+      (drop)="onRootDrop($event)"
+      (dragleave)="onRootDragLeave($event)"
+    >
+      Suelta aqui para mover una categoria al nivel raiz
+    </div>
+
     <div class="tree-wrap" *ngIf="treeRows.length; else noTreeRows">
       <div
         class="tree-row"
         *ngFor="let row of treeRows"
         [class.active]="isCategoryRowActive(row)"
         [class.attribute-active]="isAttributeRowActive(row)"
+        [class.drag-over]="isCategoryDropTarget(row)"
+        [class.dragging]="isRowBeingDragged(row)"
+        [draggable]="true"
+        (dragstart)="onRowDragStart(row, $event)"
+        (dragend)="onRowDragEnd()"
+        (dragover)="onCategoryDragOver(row.category.node.id, $event)"
+        (drop)="onCategoryDrop(row.category.node.id, $event)"
       >
-        <div class="tree-main" [style.paddingLeft.px]="row.level * (compactMode ? 14 : 20)">
+        <div
+          class="tree-main"
+          [style.paddingLeft.px]="row.level * (compactMode ? 14 : 20)"
+          (dragover)="onCategoryDragOver(row.category.node.id, $event)"
+          (drop)="onCategoryDrop(row.category.node.id, $event)"
+        >
+          <span class="drag-handle" aria-hidden="true" title="Arrastrar para mover">⋮⋮</span>
+
           <ng-container *ngIf="row.kind === 'category'; else attributeRow">
             <button
               type="button"
@@ -121,22 +142,14 @@
     </section>
   </article>
 
-  <article class="card inspector-card" *ngIf="isInspectorVisible" [class.is-collapsed]="isInspectorCollapsed">
+  <article class="card inspector-card" *ngIf="isInspectorVisible">
     <header class="card-header inspector-header">
       <div>
         <h3>Detalle de categoria</h3>
-        <p>Panel lateral compacto para no ocupar espacio cuando no lo necesites.</p>
-      </div>
-
-      <div class="inspector-actions">
-        <button type="button" class="ghost" (click)="toggleInspector()">
-          {{ isInspectorCollapsed ? 'Desplegar' : 'Compactar' }}
-        </button>
-        <button type="button" class="ghost" (click)="closeInspector()">Cerrar</button>
       </div>
     </header>
 
-    <div *ngIf="!isInspectorCollapsed" class="inspector-content">
+    <div class="inspector-content">
       <section class="selection-summary" *ngIf="selectedCategory; else noSelection">
         <p class="path">Ruta: {{ selectedCategoryPath }}</p>
 
@@ -196,8 +209,8 @@
           </fieldset>
 
           <div class="form-actions">
-            <button type="submit">{{ form.id ? 'Guardar cambios' : 'Crear categoria' }}</button>
-            <button type="button" class="ghost" (click)="cancelEdit()">Limpiar formulario</button>
+            <button type="button" class="ghost" (click)="closeInspector()">Cerrar</button>
+            <button type="submit">Guardar cambios</button>
           </div>
         </form>
       </details>
@@ -225,10 +238,6 @@
     </div>
   </article>
 </section>
-
-<ng-template #noCategories>
-  <p class="hint">No hay categorias todavia. Crea la primera como categoria raiz.</p>
-</ng-template>
 
 <ng-template #noTreeRows>
   <p class="hint">{{ treeEmptyMessage }}</p>

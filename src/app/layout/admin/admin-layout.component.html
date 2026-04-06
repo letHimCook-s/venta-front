@@ -74,7 +74,12 @@
                 <span>Productos</span>
               </a>
 
-              <a class="sidebar-link" routerLink="categories" routerLinkActive="border-cyan-400/50 bg-cyan-500/15 text-cyan-200">
+              <a
+                class="sidebar-link"
+                routerLink="catalog"
+                routerLinkActive="border-cyan-400/50 bg-cyan-500/15 text-cyan-200"
+                [routerLinkActiveOptions]="{ exact: true }"
+              >
                 <img [src]="icons.categorias" alt="" class="icon-img" aria-hidden="true" />
                 <span>Categorias y atributos</span>
               </a>
@@ -126,7 +131,7 @@
           <a class="icon-link" routerLink="products" title="Productos" aria-label="Productos">
             <img [src]="icons.productos" alt="" class="icon-img" aria-hidden="true" />
           </a>
-          <a class="icon-link" routerLink="categories" title="Categorias" aria-label="Categorias">
+          <a class="icon-link" routerLink="catalog" title="Categorias y atributos" aria-label="Categorias y atributos">
             <img [src]="icons.categorias" alt="" class="icon-img" aria-hidden="true" />
           </a>
           <a class="icon-link" routerLink="offers" title="Ofertas" aria-label="Ofertas">

@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+import { CommonModule, NgFor, NgIf } from '@angular/common';
 import { Component, Input, OnChanges, OnDestroy, OnInit, SimpleChanges } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Subscription } from 'rxjs';
@@ -27,10 +27,14 @@ interface TreeDisplayRow {
   attribute?: CatalogAttribute;
 }
 
+type TreeDragPayload =
+  | { kind: 'category'; categoryId: string }
+  | { kind: 'attribute'; attributeId: string; fromCategoryId: string };
+
 @Component({
   selector: 'app-categories-table',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, NgIf, NgFor],
   templateUrl: './categories-table.component.html',
   styleUrl: './categories-table.component.scss'
 })
@@ -43,7 +47,6 @@ export class CategoriesTableComponent implements OnInit, OnDestroy, OnChanges {
 
   compactMode = false;
   isInspectorVisible = false;
-  isInspectorCollapsed = true;
   treeFilterMode: TreeFilterMode = 'all';
 
   selectedCategoryId = '';
@@ -51,6 +54,10 @@ export class CategoriesTableComponent implements OnInit, OnDestroy, OnChanges {
   selectedAttributeRowKey = '';
   selectedDirectAttributes: CatalogAttribute[] = [];
   selectedResolvedAttributes: CatalogAttribute[] = [];
+
+  currentDrag: TreeDragPayload | null = null;
+  dragOverCategoryId = '';
+  isRootDropActive = false;
 
   collapsedNodeIds = new Set<string>();
 
@@ -207,7 +214,6 @@ export class CategoriesTableComponent implements OnInit, OnDestroy, OnChanges {
 
   closeInspector(): void {
     this.isInspectorVisible = false;
-    this.isInspectorCollapsed = true;
     this.cancelEdit();
   }
 
@@ -278,6 +284,127 @@ export class CategoriesTableComponent implements OnInit, OnDestroy, OnChanges {
     this.selectedAttributeRowKey = '';
   }
 
+  onRowDragStart(row: TreeDisplayRow, event: DragEvent): void {
+    if (!event.dataTransfer) {
+      return;
+    }
+
+    if (row.kind === 'category') {
+      this.currentDrag = {
+        kind: 'category',
+        categoryId: row.category.node.id
+      };
+    } else if (row.attribute) {
+      this.currentDrag = {
+        kind: 'attribute',
+        attributeId: row.attribute.id,
+        fromCategoryId: row.category.node.id
+      };
+    } else {
+      return;
+    }
+
+    event.dataTransfer.effectAllowed = 'move';
+    event.dataTransfer.setData('text/plain', row.key);
+    this.feedbackMessage = '';
+    this.errorMessage = '';
+  }
+
+  onRowDragEnd(): void {
+    this.resetDragState();
+  }
+
+  onCategoryDragOver(targetCategoryId: string, event: DragEvent): void {
+    if (!this.canDropOnCategory(targetCategoryId)) {
+      return;
+    }
+
+    event.preventDefault();
+    if (event.dataTransfer) {
+      event.dataTransfer.dropEffect = 'move';
+    }
+
+    this.dragOverCategoryId = targetCategoryId;
+    this.isRootDropActive = false;
+  }
+
+  onCategoryDrop(targetCategoryId: string, event: DragEvent): void {
+    event.preventDefault();
+
+    if (!this.currentDrag || !this.canDropOnCategory(targetCategoryId)) {
+      this.resetDragState();
+      return;
+    }
+
+    this.clearMessages();
+
+    try {
+      if (this.currentDrag.kind === 'category') {
+        this.taxonomyService.moveCategory(this.currentDrag.categoryId, targetCategoryId);
+        this.feedbackMessage = 'Categoria movida correctamente.';
+        this.selectCategoryById(this.currentDrag.categoryId);
+      } else {
+        this.taxonomyService.moveAttribute(
+          this.currentDrag.attributeId,
+          this.currentDrag.fromCategoryId,
+          targetCategoryId
+        );
+        this.feedbackMessage = 'Atributo movido correctamente.';
+        this.selectCategoryById(targetCategoryId);
+      }
+    } catch (error) {
+      this.errorMessage =
+        error instanceof Error ? error.message : 'No fue posible completar el movimiento.';
+    }
+
+    this.resetDragState();
+  }
+
+  onRootDragOver(event: DragEvent): void {
+    if (!this.currentDrag || this.currentDrag.kind !== 'category') {
+      return;
+    }
+
+    event.preventDefault();
+    if (event.dataTransfer) {
+      event.dataTransfer.dropEffect = 'move';
+    }
+
+    this.isRootDropActive = true;
+    this.dragOverCategoryId = '';
+  }
+
+  onRootDrop(event: DragEvent): void {
+    event.preventDefault();
+
+    if (!this.currentDrag || this.currentDrag.kind !== 'category') {
+      this.resetDragState();
+      return;
+    }
+
+    this.clearMessages();
+
+    try {
+      this.taxonomyService.moveCategory(this.currentDrag.categoryId, null);
+      this.feedbackMessage = 'Categoria movida a nivel raiz correctamente.';
+      this.selectCategoryById(this.currentDrag.categoryId);
+    } catch (error) {
+      this.errorMessage =
+        error instanceof Error ? error.message : 'No fue posible mover la categoria.';
+    }
+
+    this.resetDragState();
+  }
+
+  onRootDragLeave(event: DragEvent): void {
+    const nextTarget = event.relatedTarget as Node | null;
+    if (nextTarget) {
+      return;
+    }
+
+    this.isRootDropActive = false;
+  }
+
   isCategoryRowActive(row: TreeDisplayRow): boolean {
     return (
       row.kind === 'category' &&
@@ -288,6 +415,29 @@ export class CategoriesTableComponent implements OnInit, OnDestroy, OnChanges {
 
   isAttributeRowActive(row: TreeDisplayRow): boolean {
     return row.kind === 'attribute' && row.key === this.selectedAttributeRowKey;
+  }
+
+  isCategoryDropTarget(row: TreeDisplayRow): boolean {
+    return row.category.node.id === this.dragOverCategoryId;
+  }
+
+  isRowBeingDragged(row: TreeDisplayRow): boolean {
+    if (!this.currentDrag) {
+      return false;
+    }
+
+    if (row.kind === 'category' && this.currentDrag.kind === 'category') {
+      return row.category.node.id === this.currentDrag.categoryId;
+    }
+
+    if (row.kind === 'attribute' && this.currentDrag.kind === 'attribute' && row.attribute) {
+      return (
+        row.attribute.id === this.currentDrag.attributeId &&
+        row.category.node.id === this.currentDrag.fromCategoryId
+      );
+    }
+
+    return false;
   }
 
   toggleNode(nodeId: string, event: MouseEvent): void {
@@ -323,10 +473,6 @@ export class CategoriesTableComponent implements OnInit, OnDestroy, OnChanges {
 
   toggleCompactMode(): void {
     this.compactMode = !this.compactMode;
-  }
-
-  toggleInspector(): void {
-    this.isInspectorCollapsed = !this.isInspectorCollapsed;
   }
 
   getAttributeTag(attribute: CatalogAttribute): string {
@@ -394,12 +540,15 @@ export class CategoriesTableComponent implements OnInit, OnDestroy, OnChanges {
 
   private openInspector(): void {
     this.isInspectorVisible = true;
-    this.isInspectorCollapsed = false;
   }
 
   private applySelectionData(selected: FlatCategoryNode): void {
     this.selectedCategoryId = selected.node.id;
     this.selectedCategoryPath = selected.path;
+
+    if (this.form.id === selected.node.id) {
+      this.form = this.buildFormFromCategory(selected.node);
+    }
 
     this.selectedDirectAttributes = selected.node.attributeIds
       .map((attributeId) => this.attributeMap.get(attributeId))
@@ -443,5 +592,37 @@ export class CategoriesTableComponent implements OnInit, OnDestroy, OnChanges {
   private clearMessages(): void {
     this.feedbackMessage = '';
     this.errorMessage = '';
+  }
+
+  private canDropOnCategory(targetCategoryId: string): boolean {
+    if (!this.currentDrag) {
+      return false;
+    }
+
+    if (this.currentDrag.kind === 'category') {
+      if (this.currentDrag.categoryId === targetCategoryId) {
+        return false;
+      }
+
+      const descendants = this.taxonomyService.getDescendantIds(this.currentDrag.categoryId);
+      return !descendants.includes(targetCategoryId);
+    }
+
+    if (this.currentDrag.fromCategoryId === targetCategoryId) {
+      return false;
+    }
+
+    const target = this.flatCategories.find((item) => item.node.id === targetCategoryId)?.node;
+    if (!target) {
+      return false;
+    }
+
+    return !target.attributeIds.includes(this.currentDrag.attributeId);
+  }
+
+  private resetDragState(): void {
+    this.currentDrag = null;
+    this.dragOverCategoryId = '';
+    this.isRootDropActive = false;
   }
 }

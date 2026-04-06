@@ -1,11 +1,13 @@
 import { Component } from '@angular/core';
-import { AttributesManagerComponent } from '../components/attributes-manager.component';
+import { AdminCatalogPage } from '../../pages/admin-catalog.page';
 
 @Component({
   selector: 'app-admin-attributes-page',
   standalone: true,
-  imports: [AttributesManagerComponent],
+  imports: [AdminCatalogPage],
   templateUrl: './attributes.page.html',
   styleUrl: './attributes.page.scss'
 })
-export class AdminAttributesPage {}
+export class AdminAttributesPage {
+  readonly initialSection = 'attributes' as const;
+}

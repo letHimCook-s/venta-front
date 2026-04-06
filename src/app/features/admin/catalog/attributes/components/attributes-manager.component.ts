@@ -1,12 +1,8 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Subscription } from 'rxjs';
 import {
-  AttributeValueType,
-  CatalogAttribute,
-  CatalogTaxonomyState,
-  FlatCategoryNode
+  AttributeValueType
 } from '../../categories/models/catalog-taxonomy.model';
 import { CatalogTaxonomyService } from '../../categories/services/catalog-taxonomy.service';
 
@@ -26,7 +22,9 @@ interface AttributeFormModel {
   templateUrl: './attributes-manager.component.html',
   styleUrl: './attributes-manager.component.scss'
 })
-export class AttributesManagerComponent implements OnInit, OnDestroy {
+export class AttributesManagerComponent implements OnChanges {
+  @Input() openCreateRequestId = 0;
+
   readonly valueTypeOptions: Array<{ value: AttributeValueType; label: string }> = [
     { value: 'text', label: 'Texto libre' },
     { value: 'number', label: 'Numerico' },
@@ -36,34 +34,40 @@ export class AttributesManagerComponent implements OnInit, OnDestroy {
   ];
 
   form: AttributeFormModel = this.getEmptyForm();
-  attributes: CatalogAttribute[] = [];
-  flatCategories: FlatCategoryNode[] = [];
+  isInspectorVisible = false;
 
   feedbackMessage = '';
   errorMessage = '';
 
-  private readonly subscription = new Subscription();
-
   constructor(private readonly taxonomyService: CatalogTaxonomyService) {}
 
-  ngOnInit(): void {
-    this.refreshViewModel(this.taxonomyService.getSnapshot());
-    this.subscription.add(
-      this.taxonomyService.state$.subscribe((state) => {
-        this.refreshViewModel(state);
-      })
-    );
+  ngOnChanges(changes: SimpleChanges): void {
+    const trigger = changes['openCreateRequestId'];
+    if (!trigger || trigger.currentValue === trigger.previousValue) {
+      return;
+    }
+
+    if (typeof trigger.currentValue === 'number' && trigger.currentValue > 0) {
+      this.openCreatePanel();
+    }
   }
 
-  ngOnDestroy(): void {
-    this.subscription.unsubscribe();
+  openCreatePanel(): void {
+    this.clearMessages();
+    this.form = this.getEmptyForm();
+    this.isInspectorVisible = true;
+  }
+
+  closeInspector(): void {
+    this.isInspectorVisible = false;
+    this.form = this.getEmptyForm();
   }
 
   submitAttribute(): void {
     this.clearMessages();
 
     try {
-      this.taxonomyService.upsertAttribute({
+      const saved = this.taxonomyService.upsertAttribute({
         id: this.form.id,
         name: this.form.name,
         code: this.form.code,
@@ -80,27 +84,19 @@ export class AttributesManagerComponent implements OnInit, OnDestroy {
       this.feedbackMessage = this.form.id
         ? 'Atributo actualizado correctamente.'
         : 'Atributo creado correctamente.';
-      this.cancelEdit();
+      this.form = {
+        id: saved.id,
+        name: saved.name,
+        code: saved.code,
+        valueType: saved.valueType,
+        optionsInput: saved.options.join(', '),
+        required: saved.required
+      };
+      this.isInspectorVisible = true;
     } catch (error) {
       this.errorMessage =
         error instanceof Error ? error.message : 'No fue posible guardar el atributo.';
     }
-  }
-
-  startEdit(attribute: CatalogAttribute): void {
-    this.clearMessages();
-    this.form = {
-      id: attribute.id,
-      name: attribute.name,
-      code: attribute.code,
-      valueType: attribute.valueType,
-      optionsInput: attribute.options.join(', '),
-      required: attribute.required
-    };
-  }
-
-  cancelEdit(): void {
-    this.form = this.getEmptyForm();
   }
 
   deleteAttribute(attributeId: string): void {
@@ -108,34 +104,11 @@ export class AttributesManagerComponent implements OnInit, OnDestroy {
     this.taxonomyService.deleteAttribute(attributeId);
     this.feedbackMessage = 'Atributo eliminado y removido de las categorias asociadas.';
 
-    if (this.form.id === attributeId) {
-      this.cancelEdit();
-    }
+    this.closeInspector();
   }
 
   shouldShowOptions(): boolean {
     return this.form.valueType === 'select' || this.form.valueType === 'size';
-  }
-
-  getCategoryPaths(attributeId: string): string {
-    const paths = this.flatCategories
-      .filter((item) => item.node.attributeIds.includes(attributeId))
-      .map((item) => item.path);
-
-    return paths.length ? paths.join(' | ') : '-';
-  }
-
-  getUsage(attributeId: string): number {
-    return this.taxonomyService.getAttributeUsage(attributeId);
-  }
-
-  trackByAttributeId(_: number, item: CatalogAttribute): string {
-    return item.id;
-  }
-
-  private refreshViewModel(state: CatalogTaxonomyState): void {
-    this.attributes = state.attributes.slice().sort((a, b) => a.name.localeCompare(b.name));
-    this.flatCategories = this.taxonomyService.getFlatCategories();
   }
 
   private getEmptyForm(): AttributeFormModel {

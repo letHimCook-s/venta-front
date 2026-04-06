@@ -1,0 +1,33 @@
+<section class="page">
+  <header class="page-topbar">
+    <h1>Categorias y atributos</h1>
+
+    <div class="topbar-actions">
+      <button type="button" class="topbar-cta" (click)="createCategoryFromHeader()">
+        <span class="plus">+</span>
+        <span>Nueva categoria</span>
+      </button>
+
+      <button type="button" class="topbar-cta topbar-cta-alt" (click)="createAttributeFromHeader()">
+        <span class="plus">+</span>
+        <span>Nuevo atributo</span>
+      </button>
+    </div>
+  </header>
+
+  <section class="section-panel">
+    @if (activeSection === 'categories') {
+      <app-categories-table [createCategoryRequestId]="createCategoryRequestId" />
+    }
+
+    @if (activeSection === 'attributes') {
+      <div class="attributes-layout">
+        <app-categories-table />
+
+        <app-attributes-manager
+          [openCreateRequestId]="openCreateAttributeRequestId"
+        ></app-attributes-manager>
+      </div>
+    }
+  </section>
+</section>

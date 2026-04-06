@@ -59,15 +59,21 @@ export const routes: Routes = [
 					)
 			},
 			{
-				path: 'categories',
+				path: 'catalog',
 				loadComponent: () =>
-					import('./features/admin/categories/pages/categories.page').then(
-						(m) => m.AdminCategoriesPage
+					import('./features/admin/catalog/pages/admin-catalog.page').then(
+						(m) => m.AdminCatalogPage
 					)
 			},
 			{
+				path: 'categories',
+				redirectTo: 'catalog',
+				pathMatch: 'full'
+			},
+			{
 				path: 'attributes',
-				redirectTo: 'categories'
+				redirectTo: 'catalog',
+				pathMatch: 'full'
 			},
 			{
 				path: 'offers',
