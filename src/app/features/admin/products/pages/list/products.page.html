@@ -1,0 +1,23 @@
+<section class="page">
+  <header class="page-topbar">
+    <div>
+      <h1>Gestion de productos</h1>
+    </div>
+  </header>
+
+  @if (feedbackMessage) {
+    <p class="feedback success">{{ feedbackMessage }}</p>
+  }
+
+  <admin-products-filters
+    [products]="products"
+    (filtersChange)="onFiltersChange($event)"
+  ></admin-products-filters>
+
+  <app-products-table
+    [products]="filteredProducts"
+    (createRequested)="openCreateForm()"
+    (editRequested)="openEditForm($event)"
+    (toggleRequested)="toggleProduct($event)"
+  ></app-products-table>
+</section>

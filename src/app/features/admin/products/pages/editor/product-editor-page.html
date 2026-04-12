@@ -1,0 +1,33 @@
+<section class="page">
+  <header class="page-topbar">
+    <div>
+      <h1>{{ title }}</h1>
+    </div>
+
+    <button type="button" class="back-btn" (click)="backToList()">Volver a productos</button>
+  </header>
+
+  <nav class="breadcrumbs" aria-label="breadcrumbs">
+    <a routerLink="/admin/products">Productos</a>
+    <span>/</span>
+    <strong>{{ breadcrumbCurrent }}</strong>
+  </nav>
+
+  @if (feedbackMessage) {
+    <p class="feedback success">{{ feedbackMessage }}</p>
+  }
+
+  @if (errorMessage) {
+    <p class="feedback error">{{ errorMessage }}</p>
+  }
+
+  @if (!isMissingProduct) {
+    <app-product-form
+      [categories]="categories"
+      [product]="selectedProduct"
+      (saveRequested)="saveProduct($event)"
+      (toggleVisibilityRequested)="toggleProductVisibility()"
+      (deleteRequested)="deleteProduct()"
+    ></app-product-form>
+  }
+</section>

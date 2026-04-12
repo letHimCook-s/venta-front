@@ -1,0 +1,237 @@
+<section class="card">
+  <form class="form-layout" (ngSubmit)="save()">
+    <section class="editor-grid">
+      <fieldset>
+        <legend>Multimedia</legend>
+
+        <div class="media-grid">
+          <article>
+            <h3>Imagenes del producto</h3>
+            <label class="upload-box">
+              <span>Subir imagenes (max 5)</span>
+              <input type="file" accept="image/*" multiple (change)="onImagesSelected($event)" />
+            </label>
+
+            @if (mediaErrorMessage) {
+              <p class="hint hint-error">{{ mediaErrorMessage }}</p>
+            }
+
+            @if (form.images.length === 0) {
+              <p class="hint">No hay imagenes cargadas.</p>
+            } @else {
+              @if (selectedPreviewImage; as previewImage) {
+                <figure class="preview-figure">
+                  <img [src]="previewImage.dataUrl" [alt]="previewImage.name" />
+                  @if (form.images.length > 1) {
+                    <button
+                      type="button"
+                      class="preview-nav-btn preview-nav-prev"
+                      (click)="showPreviousPreviewImage($event)"
+                      aria-label="Imagen anterior"
+                    >
+                      ‹
+                    </button>
+                    <button
+                      type="button"
+                      class="preview-nav-btn preview-nav-next"
+                      (click)="showNextPreviewImage($event)"
+                      aria-label="Imagen siguiente"
+                    >
+                      ›
+                    </button>
+                    <span class="preview-counter">{{ selectedPreviewIndex + 1 }}/{{ form.images.length }}</span>
+                  }
+                  <figcaption>{{ previewImage.name }}</figcaption>
+                </figure>
+              }
+
+              <ul class="media-list">
+                @for (image of form.images; track trackByImage($index, image)) {
+                  <li [class.selected]="selectedImageId === image.id" (click)="selectImagePreview(image.id)">
+                    <button
+                      type="button"
+                      class="delete-icon-btn"
+                      (click)="$event.stopPropagation(); removeImage(image.id)"
+                      aria-label="Eliminar imagen"
+                      title="Eliminar imagen"
+                    >
+                      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                        <path d="M9 3h6l1 2h4v2H4V5h4l1-2zm1 7h2v8h-2v-8zm4 0h2v8h-2v-8zM7 10h2v8H7v-8z"/>
+                      </svg>
+                    </button>
+                    <img [src]="image.dataUrl" [alt]="image.name" />
+                  </li>
+                }
+              </ul>
+            }
+          </article>
+
+          <article>
+            <h3>Videos del producto</h3>
+
+            <label class="upload-box">
+              <span>Subir video (max 1)</span>
+              <input type="file" accept="video/*" (change)="onVideoFilesSelected($event)" />
+            </label>
+
+            <div class="inline-link">
+              <input
+                type="url"
+                placeholder="https://..."
+                name="videoLink"
+                [(ngModel)]="videoLinkDraft"
+              />
+              <button type="button" class="line-btn" (click)="addVideoLink()">Agregar enlace</button>
+            </div>
+
+            @if (form.videos.length === 0) {
+              <p class="hint">No hay videos cargados.</p>
+            } @else {
+              <ul class="video-list">
+                @for (video of form.videos; track trackByVideo($index, video)) {
+                  <li>
+                    <div>
+                      <strong>{{ video.kind === 'link' ? 'Enlace' : 'Archivo' }}</strong>
+                      <small>{{ video.name || video.source }}</small>
+                    </div>
+                    <button type="button" (click)="removeVideo(video.id)">Quitar</button>
+                  </li>
+                }
+              </ul>
+            }
+          </article>
+        </div>
+      </fieldset>
+
+      <div class="right-column">
+        <fieldset>
+          <legend>Informacion general</legend>
+
+          <label>
+            <span>Nombre</span>
+            <input type="text" name="name" [(ngModel)]="form.name" required />
+          </label>
+
+          <label>
+            <span>SKU</span>
+            <input type="text" name="sku" [(ngModel)]="form.sku" required />
+          </label>
+
+          <label>
+            <span>Descripcion</span>
+            <textarea name="description" rows="3" [(ngModel)]="form.description"></textarea>
+          </label>
+
+          <div class="split-3">
+            <label>
+              <span>Precio</span>
+              <input
+                type="number"
+                min="0"
+                step="0.01"
+                placeholder="0"
+                name="price"
+                [ngModel]="form.price ?? ''"
+                (ngModelChange)="onPriceChange($event)"
+                required
+              />
+            </label>
+
+            <label>
+              <span>Stock</span>
+              <input
+                type="number"
+                min="0"
+                step="1"
+                placeholder="0"
+                name="stock"
+                [ngModel]="form.stock ?? ''"
+                (ngModelChange)="onStockChange($event)"
+                required
+              />
+            </label>
+
+            <label>
+              <span>Visibilidad</span>
+              <select name="status" [(ngModel)]="form.status">
+                <option value="active">Activo</option>
+                <option value="inactive">Inactivo</option>
+              </select>
+            </label>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Categoria y atributos</legend>
+
+          <label>
+            <span>Categoria</span>
+            <select name="categoryId" [(ngModel)]="form.categoryId" (ngModelChange)="onCategoryChange()">
+              <option value="">Seleccionar categoria</option>
+              @for (item of categories; track trackByCategory($index, item)) {
+                <option [value]="item.node.id">{{ item.path }}</option>
+              }
+            </select>
+          </label>
+
+          @if (availableAttributes.length === 0) {
+            <p class="hint">La categoria seleccionada no tiene atributos configurados.</p>
+          } @else {
+            <div class="attributes-grid">
+              @for (attribute of availableAttributes; track trackByAttribute($index, attribute)) {
+                <label>
+                  <span>{{ attribute.name }}</span>
+
+                  @if (attribute.valueType === 'number') {
+                    <input type="number" [name]="'attr-' + attribute.id" [(ngModel)]="attributeValues[attribute.id]" />
+                  } @else if (attribute.valueType === 'color') {
+                    <div class="color-picker-row">
+                      <input
+                        #colorInput
+                        class="hidden-color-input"
+                        type="color"
+                        [name]="'attr-' + attribute.id"
+                        [ngModel]="attributeValues[attribute.id] || '#ffffff'"
+                        (ngModelChange)="attributeValues[attribute.id] = $event"
+                      />
+                      <button
+                        type="button"
+                        class="color-preview-dot"
+                        [style.background]="attributeValues[attribute.id] || '#ffffff'"
+                        [class.empty]="!attributeValues[attribute.id]"
+                        (click)="colorInput.click()"
+                        aria-label="Seleccionar color"
+                        title="Seleccionar color"
+                      ></button>
+                    </div>
+                  } @else if ((attribute.valueType === 'select' || attribute.valueType === 'size') && attribute.options.length > 0) {
+                    <select [name]="'attr-' + attribute.id" [(ngModel)]="attributeValues[attribute.id]">
+                      <option value="">Seleccionar</option>
+                      @for (opt of attribute.options; track opt) {
+                        <option [value]="opt">{{ opt }}</option>
+                      }
+                    </select>
+                  } @else {
+                    <input type="text" [name]="'attr-' + attribute.id" [(ngModel)]="attributeValues[attribute.id]" />
+                  }
+                </label>
+              }
+            </div>
+          }
+        </fieldset>
+      </div>
+    </section>
+
+    <footer class="form-actions">
+      @if (isEditMode) {
+        <button type="button" class="line-btn" (click)="toggleVisibilityRequested.emit()">
+          {{ form.status === 'active' ? 'Desactivar producto' : 'Activar producto' }}
+        </button>
+        <button type="button" class="line-btn danger" (click)="deleteRequested.emit()">
+          Eliminar producto
+        </button>
+      }
+      <button type="submit" class="primary-btn">{{ isEditMode ? 'Guardar cambios' : 'Crear producto' }}</button>
+    </footer>
+  </form>
+</section>

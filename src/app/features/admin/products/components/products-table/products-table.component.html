@@ -1,0 +1,202 @@
+<section class="card">
+  <header class="table-header">
+    <div class="title-with-filter">
+      <h2>Productos</h2>
+      <button
+        type="button"
+        class="filters-icon-btn"
+        [class.active]="filtersToggleActive"
+        (click)="filtersToggleRequested.emit()"
+        aria-label="Mostrar u ocultar filtros"
+        [attr.aria-expanded]="filtersToggleActive"
+      >
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <path d="M3 5h18l-7 8v5l-4 1v-6L3 5z" />
+        </svg>
+      </button>
+      @if (showFilters) {
+        <button
+          type="button"
+          class="filters-icon-btn"
+          [class.active]="filtersColumnLayout"
+          (click)="onFiltersLayoutChange(!filtersColumnLayout)"
+          [attr.aria-label]="filtersColumnLayout ? 'Mostrar filtros en fila' : 'Mostrar filtros en columna izquierda'"
+          [title]="filtersColumnLayout ? 'Ver filtros en fila' : 'Ver filtros en columna izquierda'"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path d="M4 5h4v14H4V5zm6 0h10v4H10V5zm0 6h10v4H10v-4zm0 6h10v2H10v-2z" />
+          </svg>
+        </button>
+      }
+    </div>
+
+    <div class="header-actions">
+      <div class="view-toggle" role="group" aria-label="Cambiar vista de productos">
+        <button
+          type="button"
+          class="view-btn"
+          [class.active]="viewMode === 'table'"
+          (click)="setViewMode('table')"
+        >
+          Tabla
+        </button>
+        <button
+          type="button"
+          class="view-btn"
+          [class.active]="viewMode === 'grid'"
+          (click)="setViewMode('grid')"
+        >
+          Cuadricula
+        </button>
+      </div>
+
+      <button type="button" class="primary-btn" (click)="createRequested.emit()">
+        + Nuevo producto
+      </button>
+    </div>
+  </header>
+
+  <section class="content-shell" [class.with-sidebar]="showFilters && filtersColumnLayout">
+    @if (showFilters) {
+      <aside class="filters-side">
+        <admin-products-filters
+          [products]="filterProducts"
+          [isColumnLayout]="filtersColumnLayout"
+          (filtersChange)="filtersChange.emit($event)"
+        ></admin-products-filters>
+      </aside>
+    }
+
+    <div class="results-side">
+      @if (visibleProducts.length === 0) {
+        <p class="empty">No hay productos para mostrar.</p>
+      } @else if (viewMode === 'grid') {
+        <section class="products-grid" aria-label="Vista cuadricula de productos">
+      @for (item of visibleProducts; track item.id) {
+        <article
+          class="product-card"
+          tabindex="0"
+          (click)="editRequested.emit(item.id)"
+          (keydown.enter)="editRequested.emit(item.id)"
+          (keydown.space)="editRequested.emit(item.id)"
+        >
+          <div class="thumb-wrap">
+            @if (getCurrentSlide(item); as currentSlide) {
+              @if (currentSlide.kind === 'image') {
+                <img class="thumb" [src]="currentSlide.source" [alt]="currentSlide.label" />
+              } @else if (currentSlide.kind === 'video-file') {
+                <video class="thumb" [src]="currentSlide.source" controls muted></video>
+              } @else {
+                <div class="thumb thumb-fallback thumb-link-video">
+                  <span>Video externo</span>
+                  <a [href]="currentSlide.source" target="_blank" rel="noopener noreferrer" (click)="$event.stopPropagation()">
+                    Abrir enlace
+                  </a>
+                </div>
+              }
+
+              @if (getMediaSlides(item).length > 1) {
+                <button
+                  type="button"
+                  class="carousel-btn carousel-btn-prev"
+                  (click)="prevSlide(item, $event)"
+                  aria-label="Anterior"
+                >
+                  ‹
+                </button>
+                <button
+                  type="button"
+                  class="carousel-btn carousel-btn-next"
+                  (click)="nextSlide(item, $event)"
+                  aria-label="Siguiente"
+                >
+                  ›
+                </button>
+
+                <span class="carousel-indicator">
+                  {{ getCurrentSlideIndex(item) + 1 }}/{{ getMediaSlides(item).length }}
+                </span>
+              }
+            } @else {
+              <div class="thumb thumb-fallback" aria-hidden="true">Sin imagen</div>
+            }
+            <span class="status" [class.active]="item.status === 'active'" [class.inactive]="item.status === 'inactive'" [class.deleted]="item.status === 'deleted'">
+              {{ item.status === 'active' ? 'Activo' : item.status === 'inactive' ? 'Inactivo' : 'Eliminado' }}
+            </span>
+          </div>
+
+          <div class="card-body">
+            <h3>{{ item.name }}</h3>
+            <p class="meta">SKU: {{ item.sku }}</p>
+            <p class="meta">{{ item.categoryPath || 'Sin categoria' }}</p>
+
+            <div class="price-row">
+              <strong>{{ formatCurrency(item.price) }}</strong>
+              <span>Stock: {{ item.stock }}</span>
+            </div>
+
+            <small class="assets">{{ item.images.length }} img - {{ item.videos.length }} vid</small>
+          </div>
+        </article>
+      }
+        </section>
+      } @else {
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Producto</th>
+                <th>SKU</th>
+                <th>Precio</th>
+                <th>Stock</th>
+                <th>Categoria</th>
+                <th>Estado</th>
+                <th>Actualizado</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              @for (item of visibleProducts; track item.id) {
+                <tr
+                  class="row-clickable"
+                  tabindex="0"
+                  (click)="editRequested.emit(item.id)"
+                  (keydown.enter)="editRequested.emit(item.id)"
+                  (keydown.space)="editRequested.emit(item.id)"
+                >
+                  <td>
+                    <div class="product-cell">
+                      <strong>{{ item.name }}</strong>
+                      <small>{{ item.images.length }} img - {{ item.videos.length }} vid</small>
+                    </div>
+                  </td>
+                  <td>{{ item.sku }}</td>
+                  <td>{{ formatCurrency(item.price) }}</td>
+                  <td>{{ item.stock }}</td>
+                  <td>{{ item.categoryPath || 'Sin categoria' }}</td>
+                  <td>
+                    @if (item.status === 'deleted') {
+                      <span class="status deleted">Eliminado</span>
+                    } @else {
+                      <label class="status-switch" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
+                        <input
+                          type="checkbox"
+                          [checked]="isActive(item)"
+                          (click)="$event.stopPropagation()"
+                          (change)="toggleRequested.emit(item.id)"
+                        />
+                        <span class="status-slider"></span>
+                        <span class="status-text">{{ isActive(item) ? 'Activo' : 'Inactivo' }}</span>
+                      </label>
+                    }
+                  </td>
+                  <td>{{ formatDate(item.updatedAt) }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </div>
+  </section>
+</section>

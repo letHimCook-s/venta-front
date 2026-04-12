@@ -1,0 +1,82 @@
+.page {
+  padding: 0.2rem 0 0.85rem;
+  display: grid;
+  gap: 0.4rem;
+  align-content: start;
+  width: 100%;
+}
+
+.breadcrumbs {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.76rem;
+  color: #64748b;
+
+  a {
+    color: #0284c7;
+    text-decoration: none;
+    font-weight: 700;
+  }
+
+  strong {
+    color: #1e293b;
+    font-weight: 700;
+  }
+}
+
+.page-topbar {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.55rem;
+
+  h1 {
+    margin: 0;
+    font-size: clamp(1rem, 1.35vw, 1.2rem);
+    line-height: 1.15;
+    font-weight: 800;
+    color: #0f172a;
+  }
+}
+
+.back-btn {
+  border: 1px solid #cbd5e1;
+  border-radius: 999px;
+  padding: 0.34rem 0.62rem;
+  background: #ffffff;
+  color: #0f172a;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.feedback {
+  width: 100%;
+  margin: 0;
+  border-radius: 0.7rem;
+  border: 1px solid;
+  padding: 0.4rem 0.55rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.feedback.success {
+  border-color: #bbf7d0;
+  background: #f0fdf4;
+  color: #166534;
+}
+
+.feedback.error {
+  border-color: #fecdd3;
+  background: #fff1f2;
+  color: #be123c;
+}
+
+@media (max-width: 760px) {
+  .page-topbar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

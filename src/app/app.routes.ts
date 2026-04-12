@@ -52,9 +52,23 @@ export const routes: Routes = [
 					)
 			},
 			{
+				path: 'products/new',
+				loadComponent: () =>
+					import('./features/admin/products/pages/editor/product-editor-page').then(
+						(m) => m.AdminProductEditorPage
+					)
+			},
+			{
+				path: 'products/:id/edit',
+				loadComponent: () =>
+					import('./features/admin/products/pages/editor/product-editor-page').then(
+						(m) => m.AdminProductEditorPage
+					)
+			},
+			{
 				path: 'products',
 				loadComponent: () =>
-					import('./features/admin/products/pages/products.page').then(
+					import('./features/admin/products/pages/list/products.page').then(
 						(m) => m.AdminProductsPage
 					)
 			},
