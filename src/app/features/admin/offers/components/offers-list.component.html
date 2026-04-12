@@ -1,4 +1,173 @@
-<article class="card">
-  <h3>Listado de ofertas</h3>
-  <p>Productos marcados como oferta y su estado.</p>
-</article>
+<section class="offers-cards">
+  <article class="card filters-card">
+    <section class="filters-wrap">
+      <label>
+        <span>Buscar producto</span>
+        <input
+          type="search"
+          [value]="searchQuery"
+          (input)="searchQuery = $any($event.target).value"
+          placeholder="Nombre o SKU"
+        />
+      </label>
+
+      <label>
+        <span>Categoria</span>
+        <select [value]="selectedCategoryPath" (change)="selectedCategoryPath = $any($event.target).value">
+          <option value="">Todas</option>
+          @for (category of categoryOptions; track category) {
+            <option [value]="category">{{ category }}</option>
+          }
+        </select>
+      </label>
+
+      <label>
+        <span>Estado de oferta</span>
+        <select [value]="offerStatusFilter" (change)="offerStatusFilter = $any($event.target).value">
+          <option value="all">Todos</option>
+          <option value="with-offer">Con oferta</option>
+          <option value="without-offer">Sin oferta</option>
+        </select>
+      </label>
+
+      @if (hasAppliedQuickFilters) {
+        <button
+          type="button"
+          class="reset-btn"
+          (click)="resetFilters()"
+          aria-label="Reiniciar filtros"
+          title="Reiniciar filtros"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path d="M12 5a7 7 0 1 1-6.32 10H3l3.5-3.5L10 15H7.74A5 5 0 1 0 12 7c-1.3 0-2.49.5-3.38 1.32L7.2 6.9A6.96 6.96 0 0 1 12 5z" />
+          </svg>
+        </button>
+      }
+    </section>
+  </article>
+
+  <article class="card">
+
+  <section class="bulk-actions">
+    <label class="field">
+      <span>Descuento (%)</span>
+      <input
+        type="number"
+        min="1"
+        max="99"
+        step="1"
+        [value]="discountPercentage ?? ''"
+        (input)="discountPercentage = $any($event.target).valueAsNumber"
+        placeholder="Ej: 20"
+      />
+    </label>
+
+    <label class="field field-wide">
+      <span>Campana</span>
+      <input
+        type="text"
+        [value]="campaignName"
+        (input)="campaignName = $any($event.target).value"
+        placeholder="Ej: Cyber Venta"
+      />
+    </label>
+
+    <label class="field">
+      <span>Vigencia desde</span>
+      <input
+        type="date"
+        [value]="startsAt"
+        (change)="startsAt = $any($event.target).value"
+      />
+    </label>
+
+    <label class="field">
+      <span>Vigencia hasta</span>
+      <input
+        type="date"
+        [value]="endsAt"
+        (change)="endsAt = $any($event.target).value"
+      />
+    </label>
+
+    <div class="actions-group">
+      <button type="button" class="primary-btn" [disabled]="!selectedCount || isLoading" (click)="submitDiscount()">
+        Aplicar a {{ selectedCount }} producto(s)
+      </button>
+      <button type="button" class="ghost-btn" [disabled]="!selectedCount || isLoading" (click)="clearSelectedDiscounts()">
+        Quitar oferta
+      </button>
+    </div>
+  </section>
+
+  @if (visibleProducts.length === 0) {
+    <p class="empty">No hay productos disponibles para ofertas.</p>
+  } @else if (filteredProducts.length === 0) {
+    <p class="empty">No se encontraron productos con los filtros actuales.</p>
+  } @else {
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th class="checkbox-col">
+              <input type="checkbox" [checked]="allSelected" (change)="toggleSelectAll($any($event.target).checked)" />
+            </th>
+            <th>Producto</th>
+            <th>SKU</th>
+            <th>Precio</th>
+            <th>Oferta</th>
+            <th>Campana</th>
+            <th>Vigencia</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (item of filteredProducts; track item.id) {
+            <tr>
+              <td class="checkbox-col">
+                <input
+                  type="checkbox"
+                  [checked]="selectedIds.has(item.id)"
+                  (change)="toggleSelection(item.id, $any($event.target).checked)"
+                />
+              </td>
+              <td>
+                <strong>{{ item.name }}</strong>
+              </td>
+              <td>{{ item.sku }}</td>
+              <td>
+                @if (isInOffer(item)) {
+                  <div class="price-stack">
+                    <span class="old-price">{{ formatCurrency(getOriginalPrice(item)) }}</span>
+                    <strong>{{ formatCurrency(getDiscountPrice(item)) }}</strong>
+                  </div>
+                } @else {
+                  <strong>{{ formatCurrency(item.price) }}</strong>
+                }
+              </td>
+              <td>
+                @if (item.offer) {
+                  <span class="discount-chip">-{{ item.offer.discountPercentage }}%</span>
+                } @else {
+                  <span class="muted">Sin oferta</span>
+                }
+              </td>
+              <td>
+                {{ item.offer?.campaignName || '--' }}
+              </td>
+              <td>
+                @if (item.offer) {
+                  <span class="muted-strong">{{ formatOfferDate(item.offer.startsAt) }}</span>
+                  <span class="muted"> a </span>
+                  <span class="muted-strong">{{ formatOfferDate(item.offer.endsAt) }}</span>
+                } @else {
+                  <span class="muted">--</span>
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+  </article>
+</section>

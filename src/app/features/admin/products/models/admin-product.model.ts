@@ -23,12 +23,22 @@ export interface ProductAttributeValue {
   value: string;
 }
 
+export interface ProductOffer {
+  discountPercentage: number;
+  originalPrice: number;
+  appliedAt: string;
+  campaignName: string | null;
+  startsAt: string | null;
+  endsAt: string | null;
+}
+
 export interface AdminProduct {
   id: string;
   name: string;
   description: string;
   sku: string;
   price: number;
+  offer: ProductOffer | null;
   stock: number;
   status: AdminProductStatus;
   categoryId: string | null;

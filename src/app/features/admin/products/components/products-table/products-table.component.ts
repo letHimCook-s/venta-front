@@ -30,12 +30,26 @@ export class ProductsTableComponent {
 
   viewMode: 'table' | 'grid' = 'table';
   filtersColumnLayout = false;
+  searchQuery = '';
   private readonly carouselIndexByProduct: Record<string, number> = {};
 
   get visibleProducts(): AdminProduct[] {
     return this.products
       .slice()
       .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+  }
+
+  get displayedProducts(): AdminProduct[] {
+    const search = this.searchQuery.trim().toLowerCase();
+    if (!search) {
+      return this.visibleProducts;
+    }
+
+    return this.visibleProducts.filter(
+      (item) =>
+        item.name.toLowerCase().includes(search) ||
+        item.sku.toLowerCase().includes(search)
+    );
   }
 
   formatCurrency(value: number): string {
@@ -48,6 +62,18 @@ export class ProductsTableComponent {
 
   formatDate(isoDate: string): string {
     return new Date(isoDate).toLocaleString('es-PE');
+  }
+
+  hasOffer(product: AdminProduct): boolean {
+    return !!product.offer;
+  }
+
+  getOriginalPrice(product: AdminProduct): number {
+    return product.offer?.originalPrice ?? product.price;
+  }
+
+  getDiscountPercentage(product: AdminProduct): number | null {
+    return product.offer?.discountPercentage ?? null;
   }
 
   setViewMode(mode: 'table' | 'grid'): void {

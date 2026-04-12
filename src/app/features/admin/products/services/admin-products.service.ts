@@ -7,6 +7,12 @@ import {
   UpsertAdminProductInput
 } from '../models/admin-product.model';
 
+interface DiscountOfferOptions {
+  campaignName?: string | null;
+  startsAt?: string | null;
+  endsAt?: string | null;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -92,6 +98,7 @@ export class AdminProductsService {
       description: input.description.trim(),
       sku: cleanSku,
       price: this.roundPrice(input.price),
+      offer: existing?.offer ?? null,
       stock: Math.floor(input.stock),
       status: input.status,
       categoryId: input.categoryId,
@@ -114,6 +121,108 @@ export class AdminProductsService {
     });
 
     return normalized;
+  }
+
+  applyDiscountToProducts(
+    productIds: string[],
+    discountPercentage: number,
+    options?: DiscountOfferOptions
+  ): number {
+    const uniqueIds = Array.from(new Set(productIds));
+    if (!uniqueIds.length) {
+      return 0;
+    }
+
+    if (!Number.isFinite(discountPercentage) || discountPercentage <= 0 || discountPercentage >= 100) {
+      throw new Error('El descuento debe ser un numero mayor a 0 y menor a 100.');
+    }
+
+    const campaignName = options?.campaignName?.trim() || null;
+    const startsAt = options?.startsAt ?? null;
+    const endsAt = options?.endsAt ?? null;
+
+    if (startsAt && endsAt && new Date(startsAt).getTime() > new Date(endsAt).getTime()) {
+      throw new Error('La fecha de inicio no puede ser mayor a la fecha fin.');
+    }
+
+    const state = this.stateSubject.value;
+    const now = new Date().toISOString();
+    let updatedCount = 0;
+
+    const nextProducts = state.products.map((item) => {
+      if (!uniqueIds.includes(item.id) || item.status === 'deleted') {
+        return item;
+      }
+
+      const basePrice = item.offer?.originalPrice ?? item.price;
+      const discountedPrice = this.roundPrice(
+        basePrice * (1 - discountPercentage / 100)
+      );
+
+      updatedCount += 1;
+
+      return {
+        ...item,
+        price: discountedPrice,
+        offer: {
+          discountPercentage: this.roundPrice(discountPercentage),
+          originalPrice: this.roundPrice(basePrice),
+          appliedAt: now,
+          campaignName,
+          startsAt,
+          endsAt
+        },
+        updatedAt: now
+      };
+    });
+
+    if (!updatedCount) {
+      return 0;
+    }
+
+    this.commitState({
+      products: nextProducts,
+      updatedAt: now
+    });
+
+    return updatedCount;
+  }
+
+  clearDiscountFromProducts(productIds: string[]): number {
+    const uniqueIds = Array.from(new Set(productIds));
+    if (!uniqueIds.length) {
+      return 0;
+    }
+
+    const state = this.stateSubject.value;
+    const now = new Date().toISOString();
+    let updatedCount = 0;
+
+    const nextProducts = state.products.map((item) => {
+      if (!uniqueIds.includes(item.id) || !item.offer) {
+        return item;
+      }
+
+      updatedCount += 1;
+
+      return {
+        ...item,
+        price: this.roundPrice(item.offer.originalPrice),
+        offer: null,
+        updatedAt: now
+      };
+    });
+
+    if (!updatedCount) {
+      return 0;
+    }
+
+    this.commitState({
+      products: nextProducts,
+      updatedAt: now
+    });
+
+    return updatedCount;
   }
 
   toggleProductVisibility(productId: string): void {
@@ -211,7 +320,19 @@ export class AdminProductsService {
       }
 
       return {
-        products: parsed.products as AdminProduct[],
+        products: (parsed.products as AdminProduct[]).map((item) => ({
+          ...item,
+          offer: item.offer
+            ? {
+                discountPercentage: this.roundPrice(item.offer.discountPercentage),
+                originalPrice: this.roundPrice(item.offer.originalPrice),
+                appliedAt: item.offer.appliedAt,
+                campaignName: item.offer.campaignName?.trim() || null,
+                startsAt: item.offer.startsAt ?? null,
+                endsAt: item.offer.endsAt ?? null
+              }
+            : null
+        })),
         updatedAt: typeof parsed.updatedAt === 'string' ? parsed.updatedAt : new Date().toISOString()
       };
     } catch {

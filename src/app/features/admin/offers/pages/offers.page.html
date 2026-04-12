@@ -1,4 +1,15 @@
 <section class="page">
-  <h1>Gestion de ofertas</h1>
-  <p>Marca productos en oferta y configura su visibilidad.</p>
+  <header class="page-topbar">
+    <h1>Gestion de ofertas</h1>
+  </header>
+
+  @if (feedbackMessage) {
+    <p class="feedback success">{{ feedbackMessage }}</p>
+  }
+
+  <app-offers-list
+    [products]="products"
+    (applyBulkDiscount)="onApplyBulkDiscount($event)"
+    (clearBulkDiscount)="onClearBulkDiscount($event)"
+  ></app-offers-list>
 </section>

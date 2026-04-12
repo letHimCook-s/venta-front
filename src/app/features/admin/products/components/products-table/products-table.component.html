@@ -23,6 +23,15 @@
 
   <section class="card">
     <div class="header-actions">
+      <label class="table-search-inline">
+        <input
+          type="search"
+          [value]="searchQuery"
+          (input)="searchQuery = $any($event.target).value"
+          placeholder="Buscar por nombre o SKU"
+        />
+      </label>
+
       <div class="view-toggle" role="group" aria-label="Cambiar vista de productos">
         <button
           type="button"
@@ -54,9 +63,11 @@
     <div class="results-side">
       @if (visibleProducts.length === 0) {
         <p class="empty">No hay productos para mostrar.</p>
+      } @else if (displayedProducts.length === 0) {
+        <p class="empty">No se encontraron productos para la busqueda actual.</p>
       } @else if (viewMode === 'grid') {
         <section class="products-grid" aria-label="Vista cuadricula de productos">
-      @for (item of visibleProducts; track item.id) {
+      @for (item of displayedProducts; track item.id) {
         <article
           class="product-card"
           tabindex="0"
@@ -115,7 +126,15 @@
             <p class="meta">{{ item.categoryPath || 'Sin categoria' }}</p>
 
             <div class="price-row">
-              <strong>{{ formatCurrency(item.price) }}</strong>
+              @if (hasOffer(item)) {
+                <div class="offer-price">
+                  <small class="old-price">{{ formatCurrency(getOriginalPrice(item)) }}</small>
+                  <strong>{{ formatCurrency(item.price) }}</strong>
+                </div>
+                <span class="discount-chip">-{{ getDiscountPercentage(item) }}%</span>
+              } @else {
+                <strong>{{ formatCurrency(item.price) }}</strong>
+              }
               <span>Stock: {{ item.stock }}</span>
             </div>
 
@@ -140,7 +159,7 @@
             </thead>
 
             <tbody>
-              @for (item of visibleProducts; track item.id) {
+              @for (item of displayedProducts; track item.id) {
                 <tr
                   class="row-clickable"
                   tabindex="0"
@@ -155,7 +174,17 @@
                     </div>
                   </td>
                   <td>{{ item.sku }}</td>
-                  <td>{{ formatCurrency(item.price) }}</td>
+                  <td>
+                    @if (hasOffer(item)) {
+                      <div class="offer-price">
+                        <small class="old-price">{{ formatCurrency(getOriginalPrice(item)) }}</small>
+                        <strong>{{ formatCurrency(item.price) }}</strong>
+                      </div>
+                      <span class="discount-chip">-{{ getDiscountPercentage(item) }}%</span>
+                    } @else {
+                      {{ formatCurrency(item.price) }}
+                    }
+                  </td>
                   <td>{{ item.stock }}</td>
                   <td>{{ item.categoryPath || 'Sin categoria' }}</td>
                   <td>
