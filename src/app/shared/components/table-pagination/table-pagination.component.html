@@ -1,0 +1,25 @@
+<section class="pagination" aria-label="Paginacion de tabla">
+  <div class="page-size">
+    <span>Mostrar</span>
+    <select [value]="pageSize" (change)="onPageSizeChange($any($event.target).value)">
+      @for (size of pageSizeOptions; track size) {
+        <option [value]="size">{{ size }}</option>
+      }
+    </select>
+    <span>por pagina</span>
+  </div>
+
+  <p class="summary">
+    {{ fromItem }}-{{ toItem }} de {{ totalItems }}
+  </p>
+
+  <div class="controls">
+    <button type="button" (click)="goToPrev()" [disabled]="!canGoPrev" aria-label="Pagina anterior">
+      Anterior
+    </button>
+    <span class="current">{{ currentPage }}/{{ totalPages }}</span>
+    <button type="button" (click)="goToNext()" [disabled]="!canGoNext" aria-label="Pagina siguiente">
+      Siguiente
+    </button>
+  </div>
+</section>

@@ -1,0 +1,32 @@
+<section class="bulk-controls">
+  <label class="select-all">
+    <input
+      type="checkbox"
+      [checked]="allSelected"
+      (change)="selectAllToggle.emit($any($event.target).checked)"
+    />
+    <span>Seleccionar todos ({{ totalCount }})</span>
+  </label>
+
+  <div class="actions">
+    <span class="selected">Seleccionados: {{ selectedCount }}</span>
+
+    <button
+      type="button"
+      class="ghost-btn"
+      [disabled]="selectedCount === 0"
+      (click)="clearSelection.emit()"
+    >
+      Limpiar seleccion
+    </button>
+
+    <button
+      type="button"
+      class="danger-btn"
+      [disabled]="selectedCount === 0"
+      (click)="deleteSelected.emit()"
+    >
+      Eliminar seleccionados
+    </button>
+  </div>
+</section>

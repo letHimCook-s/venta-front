@@ -61,13 +61,46 @@
     </div>
 
     <div class="results-side">
+      <section class="bulk-controls" [class.hidden-control]="viewMode !== 'table' || displayedProducts.length === 0 || selectedCount === 0">
+        <label class="select-all">
+          <input
+            type="checkbox"
+            [checked]="allCurrentPageSelected"
+            (change)="toggleSelectAllCurrentPage($any($event.target).checked)"
+          />
+          <span>Seleccionar todos ({{ paginatedProducts.length }})</span>
+        </label>
+
+        <div class="bulk-actions">
+          <span class="selected">Seleccionados: {{ selectedCount }}</span>
+
+          <button
+            type="button"
+            class="bulk-ghost-btn"
+            [disabled]="selectedCount === 0"
+            (click)="clearSelection()"
+          >
+            Limpiar seleccion
+          </button>
+
+          <button
+            type="button"
+            class="bulk-danger-btn"
+            [disabled]="selectedCount === 0"
+            (click)="deleteSelected()"
+          >
+            Eliminar seleccionados
+          </button>
+        </div>
+      </section>
+
       @if (visibleProducts.length === 0) {
         <p class="empty">No hay productos para mostrar.</p>
       } @else if (displayedProducts.length === 0) {
         <p class="empty">No se encontraron productos para la busqueda actual.</p>
       } @else if (viewMode === 'grid') {
         <section class="products-grid" aria-label="Vista cuadricula de productos">
-      @for (item of displayedProducts; track item.id) {
+      @for (item of paginatedProducts; track item.id) {
         <article
           class="product-card"
           tabindex="0"
@@ -148,6 +181,15 @@
           <table>
             <thead>
               <tr>
+                <th class="selection-col">
+                  <input
+                    type="checkbox"
+                    [checked]="allCurrentPageSelected"
+                    (click)="$event.stopPropagation()"
+                    (change)="toggleSelectAllCurrentPage($any($event.target).checked)"
+                    aria-label="Seleccionar todos en pagina"
+                  />
+                </th>
                 <th>Producto</th>
                 <th>SKU</th>
                 <th>Precio</th>
@@ -159,7 +201,7 @@
             </thead>
 
             <tbody>
-              @for (item of displayedProducts; track item.id) {
+              @for (item of paginatedProducts; track item.id) {
                 <tr
                   class="row-clickable"
                   tabindex="0"
@@ -167,6 +209,15 @@
                   (keydown.enter)="editRequested.emit(item.id)"
                   (keydown.space)="editRequested.emit(item.id)"
                 >
+                  <td class="selection-col" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
+                    <input
+                      type="checkbox"
+                      [checked]="selectedIds.has(item.id)"
+                      (click)="$event.stopPropagation()"
+                      (change)="toggleSelection(item.id, $any($event.target).checked, $event)"
+                      [attr.aria-label]="'Seleccionar ' + item.name"
+                    />
+                  </td>
                   <td>
                     <div class="product-cell">
                       <strong>{{ item.name }}</strong>
@@ -210,6 +261,44 @@
           </table>
         </div>
       }
+
+      <section class="pagination" [class.hidden-control]="displayedProducts.length === 0" aria-label="Paginacion de tabla">
+        <div class="page-size">
+          <span>Mostrar</span>
+          <select [value]="pageSize" (change)="onPageSizeChange(+$any($event.target).value)">
+            @for (size of pageSizeOptions; track size) {
+              <option [value]="size">{{ size }}</option>
+            }
+          </select>
+          <span>por pagina</span>
+        </div>
+
+        <p class="summary">
+          {{ paginationFrom }}-{{ paginationTo }} de {{ displayedProducts.length }}
+        </p>
+
+        <div class="controls">
+          <button
+            type="button"
+            (click)="onPageChange(safeCurrentPage - 1)"
+            [disabled]="safeCurrentPage <= 1"
+            aria-label="Pagina anterior"
+          >
+            Anterior
+          </button>
+          <span class="current">
+            {{ safeCurrentPage }}/{{ totalPages }}
+          </span>
+          <button
+            type="button"
+            (click)="onPageChange(safeCurrentPage + 1)"
+            [disabled]="safeCurrentPage >= totalPages"
+            aria-label="Pagina siguiente"
+          >
+            Siguiente
+          </button>
+        </div>
+      </section>
     </div>
   </section>
 </section>

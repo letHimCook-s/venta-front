@@ -30,6 +30,7 @@ import { AdminProductsService } from '../../services/admin-products.service';
         (editRequested)="openEditForm($event)"
         (filtersChange)="onFiltersChange($event)"
         (toggleRequested)="toggleProduct($event)"
+        (bulkDeleteRequested)="bulkDeleteProducts($event)"
       ></app-products-table>
     </section>
   `,
@@ -96,6 +97,13 @@ export class AdminProductsPage implements OnInit, OnDestroy {
   toggleProduct(productId: string): void {
     this.productsService.toggleProductVisibility(productId);
     this.feedbackMessage = 'Estado del producto actualizado.';
+  }
+
+  bulkDeleteProducts(productIds: string[]): void {
+    const deleted = this.productsService.softDeleteProducts(productIds);
+    this.feedbackMessage = deleted
+      ? `${deleted} producto(s) eliminados en lote.`
+      : 'No se eliminaron productos.';
   }
 
   private matchesCategory(product: AdminProduct): boolean {

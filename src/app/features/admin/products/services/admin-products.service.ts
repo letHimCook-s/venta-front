@@ -149,7 +149,7 @@ export class AdminProductsService {
     const now = new Date().toISOString();
     let updatedCount = 0;
 
-    const nextProducts = state.products.map((item) => {
+    const nextProducts = state.products.map<AdminProduct>((item) => {
       if (!uniqueIds.includes(item.id) || item.status === 'deleted') {
         return item;
       }
@@ -272,6 +272,43 @@ export class AdminProductsService {
       ),
       updatedAt: now
     });
+  }
+
+  softDeleteProducts(productIds: string[]): number {
+    const uniqueIds = Array.from(new Set(productIds));
+    if (!uniqueIds.length) {
+      return 0;
+    }
+
+    const state = this.stateSubject.value;
+    const now = new Date().toISOString();
+    let updatedCount = 0;
+
+    const nextProducts: AdminProduct[] = state.products.map((item) => {
+      if (!uniqueIds.includes(item.id) || item.status === 'deleted') {
+        return item;
+      }
+
+      updatedCount += 1;
+
+      return {
+        ...item,
+        status: 'deleted' as const,
+        deletedAt: now,
+        updatedAt: now
+      };
+    });
+
+    if (!updatedCount) {
+      return 0;
+    }
+
+    this.commitState({
+      products: nextProducts,
+      updatedAt: now
+    });
+
+    return updatedCount;
   }
 
   restoreProduct(productId: string): void {

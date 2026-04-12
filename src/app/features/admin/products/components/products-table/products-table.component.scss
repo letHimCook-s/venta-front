@@ -125,6 +125,137 @@
   min-width: 0;
 }
 
+.hidden-control {
+  display: none !important;
+}
+
+.bulk-controls {
+  margin-top: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.75rem;
+  background: #f8fafc;
+  padding: 0.5rem 0.6rem;
+}
+
+.select-all {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #334155;
+
+  input {
+    width: 0.9rem;
+    height: 0.9rem;
+    accent-color: #0f172a;
+  }
+}
+
+.bulk-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.selected {
+  font-size: 0.76rem;
+  color: #475569;
+  font-weight: 700;
+}
+
+.bulk-ghost-btn,
+.bulk-danger-btn {
+  border-radius: 999px;
+  padding: 0.28rem 0.62rem;
+  font-size: 0.74rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.bulk-ghost-btn {
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  color: #334155;
+}
+
+.bulk-danger-btn {
+  border: 1px solid #fecaca;
+  background: #fff1f2;
+  color: #be123c;
+}
+
+.bulk-ghost-btn:disabled,
+.bulk-danger-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.pagination {
+  margin-top: 0.85rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.page-size {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: #475569;
+  font-size: 0.78rem;
+
+  select {
+    border: 1px solid #cbd5e1;
+    border-radius: 0.45rem;
+    padding: 0.2rem 0.45rem;
+    background: #ffffff;
+    color: #0f172a;
+  }
+}
+
+.summary {
+  margin: 0;
+  color: #64748b;
+  font-size: 0.76rem;
+}
+
+.controls {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+
+  button {
+    border: 1px solid #cbd5e1;
+    background: #ffffff;
+    color: #334155;
+    border-radius: 999px;
+    padding: 0.25rem 0.6rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    cursor: pointer;
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+}
+
+.current {
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
 .table-wrap {
   margin-top: 0.95rem;
   overflow-x: auto;
@@ -314,6 +445,18 @@ table {
     text-transform: uppercase;
     letter-spacing: 0.04em;
     color: #64748b;
+  }
+}
+
+.selection-col {
+  width: 2rem;
+
+  input[type='checkbox'] {
+    width: 0.9rem;
+    height: 0.9rem;
+    accent-color: #0f172a;
+    margin: 0;
+    cursor: pointer;
   }
 }
 
