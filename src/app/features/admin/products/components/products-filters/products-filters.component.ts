@@ -52,6 +52,7 @@ export class ProductsFiltersComponent {
   @Input() isColumnLayout = false;
 
   @Output() filtersChange = new EventEmitter<ProductTableFilters>();
+  @Output() layoutToggleRequested = new EventEmitter<void>();
 
   selectedCategoryPath = '';
   selectedAttributeId = '';
@@ -234,6 +235,19 @@ export class ProductsFiltersComponent {
     }
 
     return `${this.selectedAttributeValues.length} seleccionados`;
+  }
+
+  get hasAppliedFilters(): boolean {
+    const hasInlineFilters =
+      !!this.selectedCategoryPath ||
+      !!this.selectedAttributeId ||
+      this.selectedAttributeValues.length > 0;
+
+    const hasColumnSelections = Object.values(this.selectedAttributeValuesByAttribute).some(
+      (values) => values.length > 0
+    );
+
+    return hasInlineFilters || hasColumnSelections || this.selectedPriceMax !== null;
   }
 
   @HostListener('document:click', ['$event'])

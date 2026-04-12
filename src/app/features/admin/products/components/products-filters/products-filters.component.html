@@ -1,4 +1,17 @@
 <section class="filters-wrap" [class.column-left]="isColumnLayout">
+  <button
+    type="button"
+    class="layout-toggle-btn"
+    [class.active]="isColumnLayout"
+    (click)="layoutToggleRequested.emit()"
+    [attr.aria-label]="isColumnLayout ? 'Mostrar filtros en fila' : 'Mostrar filtros en columna izquierda'"
+    [title]="isColumnLayout ? 'Ver filtros en fila' : 'Ver filtros en columna izquierda'"
+  >
+    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <path d="M4 5h4v14H4V5zm6 0h10v4H10V5zm0 6h10v4H10v-4zm0 6h10v2H10v-2z" />
+    </svg>
+  </button>
+
   @if (!isColumnLayout) {
     <label>
       <span>Filtrar por categoria</span>
@@ -134,7 +147,7 @@
     </section>
   }
 
-  @if (!isColumnLayout) {
+  @if (!isColumnLayout && hasAppliedFilters) {
     <button
       type="button"
       class="reset-btn"

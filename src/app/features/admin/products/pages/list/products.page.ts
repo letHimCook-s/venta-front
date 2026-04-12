@@ -26,12 +26,9 @@ import { AdminProductsService } from '../../services/admin-products.service';
       <app-products-table
         [products]="filteredProducts"
         [filterProducts]="products"
-        [showFilters]="showFilters"
-        [filtersToggleActive]="showFilters || hasActiveFilters"
         (createRequested)="openCreateForm()"
         (editRequested)="openEditForm($event)"
         (filtersChange)="onFiltersChange($event)"
-        (filtersToggleRequested)="toggleFiltersPanel()"
         (toggleRequested)="toggleProduct($event)"
       ></app-products-table>
     </section>
@@ -46,8 +43,6 @@ export class AdminProductsPage implements OnInit, OnDestroy {
     attributeValues: [],
     priceMax: null
   };
-  showFilters = false;
-
   feedbackMessage = '';
 
   private readonly subscription = new Subscription();
@@ -83,26 +78,8 @@ export class AdminProductsPage implements OnInit, OnDestroy {
     this.router.navigate(['/admin/products', productId, 'edit']);
   }
 
-  toggleFiltersPanel(): void {
-    this.showFilters = !this.showFilters;
-  }
-
   onFiltersChange(filters: ProductTableFilters): void {
     this.activeFilters = filters;
-  }
-
-  get hasActiveFilters(): boolean {
-    const hasAttributeSelections = Object.values(
-      this.activeFilters.attributeSelections ?? {}
-    ).some((values) => values.length > 0);
-
-    return (
-      !!this.activeFilters.categoryPath ||
-      !!this.activeFilters.attributeId ||
-      this.activeFilters.attributeValues.length > 0 ||
-      hasAttributeSelections ||
-      this.activeFilters.priceMax !== null
-    );
   }
 
   get filteredProducts(): AdminProduct[] {

@@ -1,9 +1,39 @@
 .filters-wrap {
   margin-top: 0.7rem;
   display: grid;
-  grid-template-columns: minmax(190px, 1fr) minmax(190px, 1fr) minmax(220px, 1fr) auto;
+  grid-template-columns: auto minmax(190px, 1fr) minmax(190px, 1fr) minmax(220px, 1fr) auto;
   gap: 0.5rem;
   align-items: end;
+}
+
+.layout-toggle-btn {
+  width: 2rem;
+  height: 2rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.55rem;
+  background: #ffffff;
+  color: #334155;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+
+  svg {
+    width: 0.95rem;
+    height: 0.95rem;
+    fill: currentColor;
+  }
+
+  &:hover {
+    border-color: #94a3b8;
+    color: #0f172a;
+  }
+
+  &.active {
+    border-color: #0f172a;
+    background: #0f172a;
+    color: #ffffff;
+  }
 }
 
 .filters-wrap.column-left {
@@ -11,6 +41,7 @@
   justify-content: start;
   align-items: start;
 
+  .layout-toggle-btn,
   label,
   .value-filter,
   .attributes-checklist {

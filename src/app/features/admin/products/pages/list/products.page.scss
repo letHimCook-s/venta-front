@@ -40,6 +40,12 @@
   color: #166534;
 }
 
+.page > app-products-table {
+  display: block;
+  width: 100%;
+  margin-top: 0.6rem;
+}
+
 @media (max-width: 760px) {
   .page-topbar {
     flex-direction: column;

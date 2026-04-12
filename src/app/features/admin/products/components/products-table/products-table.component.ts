@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, OnChanges, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { AdminProduct, ProductVideoAsset } from '../../models/admin-product.model';
 import {
   ProductTableFilters,
@@ -19,16 +19,13 @@ interface ProductMediaSlide {
   templateUrl: './products-table.component.html',
   styleUrl: './products-table.component.scss'
 })
-export class ProductsTableComponent implements OnChanges {
+export class ProductsTableComponent {
   @Input() products: AdminProduct[] = [];
   @Input() filterProducts: AdminProduct[] = [];
-  @Input() filtersToggleActive = false;
-  @Input() showFilters = false;
 
   @Output() createRequested = new EventEmitter<void>();
   @Output() editRequested = new EventEmitter<string>();
   @Output() toggleRequested = new EventEmitter<string>();
-  @Output() filtersToggleRequested = new EventEmitter<void>();
   @Output() filtersChange = new EventEmitter<ProductTableFilters>();
 
   viewMode: 'table' | 'grid' = 'table';
@@ -59,12 +56,6 @@ export class ProductsTableComponent implements OnChanges {
 
   onFiltersLayoutChange(isColumnLayout: boolean): void {
     this.filtersColumnLayout = isColumnLayout;
-  }
-
-  ngOnChanges(): void {
-    if (!this.showFilters && this.filtersColumnLayout) {
-      this.filtersColumnLayout = false;
-    }
   }
 
   getCoverImage(product: AdminProduct): string | null {
