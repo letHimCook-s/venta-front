@@ -1,5 +1,5 @@
 import { CommonModule, NgFor, NgIf } from '@angular/common';
-import { Component, Input, OnChanges, OnDestroy, OnInit, SimpleChanges } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChanges } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Subscription } from 'rxjs';
 import {
@@ -40,6 +40,8 @@ type TreeDragPayload =
 })
 export class CategoriesTableComponent implements OnInit, OnDestroy, OnChanges {
   @Input() createCategoryRequestId = 0;
+  @Output() createCategoryRequested = new EventEmitter<void>();
+  @Output() createAttributeRequested = new EventEmitter<void>();
 
   form: CategoryFormModel = this.getEmptyForm();
   flatCategories: FlatCategoryNode[] = [];

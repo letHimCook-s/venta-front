@@ -1,31 +1,27 @@
 <section class="page">
   <header class="page-topbar">
     <h1>Categorias y atributos</h1>
-
-    <div class="topbar-actions">
-      <button type="button" class="topbar-cta" (click)="createCategoryFromHeader()">
-        <span class="plus">+</span>
-        <span>Nueva categoria</span>
-      </button>
-
-      <button type="button" class="topbar-cta topbar-cta-alt" (click)="createAttributeFromHeader()">
-        <span class="plus">+</span>
-        <span>Nuevo atributo</span>
-      </button>
-    </div>
   </header>
 
   <section class="section-panel">
     @if (activeSection === 'categories') {
-      <app-categories-table [createCategoryRequestId]="createCategoryRequestId" />
+      <app-categories-table
+        [createCategoryRequestId]="createCategoryRequestId"
+        (createCategoryRequested)="createCategoryFromHeader()"
+        (createAttributeRequested)="createAttributeFromHeader()"
+      />
     }
 
     @if (activeSection === 'attributes') {
-      <div class="attributes-layout">
-        <app-categories-table />
+      <div class="attributes-layout" [class.panel-open]="isAttributeInspectorVisible">
+        <app-categories-table
+          (createCategoryRequested)="createCategoryFromHeader()"
+          (createAttributeRequested)="createAttributeFromHeader()"
+        />
 
         <app-attributes-manager
           [openCreateRequestId]="openCreateAttributeRequestId"
+          (inspectorVisibilityChange)="onAttributeInspectorVisibilityChange($event)"
         ></app-attributes-manager>
       </div>
     }

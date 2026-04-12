@@ -1,4 +1,4 @@
-<section class="attribute-panel" *ngIf="isInspectorVisible; else emptyPanel">
+<section class="attribute-panel" *ngIf="isInspectorVisible">
   <article class="card inspector-card">
     <header class="card-header inspector-header">
       <h3>{{ form.id ? 'Editar atributo' : 'Nuevo atributo' }}</h3>
@@ -66,9 +66,3 @@
     <p class="feedback error" *ngIf="errorMessage">{{ errorMessage }}</p>
   </article>
 </section>
-
-<ng-template #emptyPanel>
-  <section class="attribute-panel-placeholder">
-    <p>Pulsa <strong>Nuevo atributo</strong> para abrir el formulario en el panel derecho.</p>
-  </section>
-</ng-template>

@@ -18,6 +18,7 @@ export class AdminCatalogPage implements OnChanges {
   activeSection: AdminCatalogSection = 'categories';
   createCategoryRequestId = 0;
   openCreateAttributeRequestId = 0;
+  isAttributeInspectorVisible = false;
 
   ngOnChanges(changes: SimpleChanges): void {
     const sectionChange = changes['initialSection'];
@@ -30,11 +31,17 @@ export class AdminCatalogPage implements OnChanges {
 
   createCategoryFromHeader(): void {
     this.activeSection = 'categories';
+    this.isAttributeInspectorVisible = false;
     this.createCategoryRequestId += 1;
   }
 
   createAttributeFromHeader(): void {
     this.activeSection = 'attributes';
+    this.isAttributeInspectorVisible = true;
     this.openCreateAttributeRequestId += 1;
+  }
+
+  onAttributeInspectorVisibilityChange(isVisible: boolean): void {
+    this.isAttributeInspectorVisible = isVisible;
   }
 }

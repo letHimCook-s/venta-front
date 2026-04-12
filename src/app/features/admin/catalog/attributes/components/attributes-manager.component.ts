@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import {
   AttributeValueType
@@ -24,6 +24,7 @@ interface AttributeFormModel {
 })
 export class AttributesManagerComponent implements OnChanges {
   @Input() openCreateRequestId = 0;
+  @Output() inspectorVisibilityChange = new EventEmitter<boolean>();
 
   readonly valueTypeOptions: Array<{ value: AttributeValueType; label: string }> = [
     { value: 'text', label: 'Texto libre' },
@@ -56,11 +57,13 @@ export class AttributesManagerComponent implements OnChanges {
     this.clearMessages();
     this.form = this.getEmptyForm();
     this.isInspectorVisible = true;
+    this.inspectorVisibilityChange.emit(true);
   }
 
   closeInspector(): void {
     this.isInspectorVisible = false;
     this.form = this.getEmptyForm();
+    this.inspectorVisibilityChange.emit(false);
   }
 
   submitAttribute(): void {
@@ -93,6 +96,7 @@ export class AttributesManagerComponent implements OnChanges {
         required: saved.required
       };
       this.isInspectorVisible = true;
+      this.inspectorVisibilityChange.emit(true);
     } catch (error) {
       this.errorMessage =
         error instanceof Error ? error.message : 'No fue posible guardar el atributo.';
